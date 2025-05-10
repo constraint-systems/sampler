@@ -46,8 +46,15 @@ export function SingleBlockRotator() {
       startingBlockAngleRef.current = block.rotation || 0;
       startAngleRef.current = angle;
     }
-    const newAngle =
+    let newAngle =
       startingBlockAngleRef.current + (angle - startAngleRef.current);
+
+    if (event.shiftKey) {
+      // snap to 45 degree angles
+      const snap = Math.PI / 4;
+      newAngle = Math.round(newAngle / snap) * snap;
+    }
+
     setBlockMap((prev) => ({
       ...prev,
       [id]: {
@@ -58,7 +65,7 @@ export function SingleBlockRotator() {
   });
 
   const scaledSize = Math.max(8, size / camera.z);
-  const scaledOffset = Math.max(offset, offset / camera.z)
+  const scaledOffset = Math.max(offset, offset / camera.z);
 
   return (
     <div

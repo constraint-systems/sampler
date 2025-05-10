@@ -6,7 +6,7 @@ export function ToolAlign() {
   const [stateRef] = useAtom(StateRefAtom);
   const [, setBlockMap] = useAtom(BlockMapAtom);
 
-  const arrows = ["↖", "↑", "↗", "←", "•", "→", "↙", "↓", "↘"];
+  // const arrows = ["↖", "↑", "↗", "←", "•", "→", "↙", "↓", "↘"];
 
   function getSelectedBlocks() {
     const { selectedBlockIds, blockMap } = stateRef;
@@ -119,7 +119,7 @@ export function ToolAlign() {
           bottom
         </button>
       </div>
-      <div className="flex">
+      <div className="flex pointer-events-auto">
         <button
           className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700"
           onClick={(e) => {
@@ -189,30 +189,24 @@ export function ToolAlign() {
           stack V
         </button>
       </div>
-      <div className="flex">
+      <div className="flex pointer-events-auto">
         <button
           className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700"
           onClick={(e) => {
             e.stopPropagation();
             const blocks = getSelectedBlocks();
 
-            const extents = blocks.map((block) => getRotatedExtents(block));
+            // already got container
+            const selectedBox = stateRef.selectedBox;
 
-            // sort blocks by their minY
-            extents.sort((a, b) => a.minX - b.minX);
-
-            const minX = Math.min(...extents.map((ext) => ext.minX));
-            const maxX = Math.max(...extents.map((ext) => ext.maxX));
-
-            const containerWidth = maxX - minX;
-            const newCenter = minX + containerWidth / 2;
+            const newCenter = selectedBox!.x + selectedBox!.width / 2;
 
             setBlockMap((prev) => {
               const newMap = { ...prev };
               blocks.forEach((block) => {
                 newMap[block.id] = {
                   ...newMap[block.id],
-                  x: newCenter,
+                  x: newCenter - block.width / 2,
                 };
               });
               return newMap;
@@ -227,23 +221,16 @@ export function ToolAlign() {
             e.stopPropagation();
             const blocks = getSelectedBlocks();
 
-            const extents = blocks.map((block) => getRotatedExtents(block));
-
-            // sort blocks by their minY
-            extents.sort((a, b) => a.minY - b.minY);
-
-            const minY = Math.min(...extents.map((ext) => ext.minY));
-            const maxY = Math.max(...extents.map((ext) => ext.maxY));
-
-            const containerHeight = maxY - minY;
-            const newCenter = minY + containerHeight / 2;
+            // already got container
+            const selectedBox = stateRef.selectedBox;
+            const newCenter = selectedBox!.y + selectedBox!.height / 2;
 
             setBlockMap((prev) => {
               const newMap = { ...prev };
               blocks.forEach((block) => {
                 newMap[block.id] = {
                   ...newMap[block.id],
-                  y: newCenter,
+                  y: newCenter - block.height / 2,
                 };
               });
               return newMap;
@@ -253,9 +240,9 @@ export function ToolAlign() {
           center V
         </button>
       </div>
-      <div className="flex">
+      <div className="flex pointer-events-auto">
         <button
-          className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700"
+          className="px-3 py-1 bg-neutral-800  hover:bg-neutral-700"
           onClick={(e) => {
             e.stopPropagation();
             const blocks = getSelectedBlocks();

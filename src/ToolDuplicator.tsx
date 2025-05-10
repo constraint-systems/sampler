@@ -111,26 +111,26 @@ export function ToolDuplicator({ blocks }: { blocks: BlockType[] }) {
               },
             }));
           }
-          const duration = 300;
-          const start = performance.now();
-          const initialCameraX = stateRef.camera.x;
-          const initialCameraY = stateRef.camera.y;
-          const animate = (time: number) => {
-            const progress = Math.min((time - start) / duration, 1);
-            const additionX = centerMoveX * progress;
-            const additionY = centerMoveY * progress;
-            setCamera((prev) => {
-              return {
-                ...prev,
-                x: initialCameraX - additionX,
-                y: initialCameraY - additionY,
-              };
-            });
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            }
-          };
-          requestAnimationFrame(animate);
+          // const duration = 300;
+          // const start = performance.now();
+          // const initialCameraX = stateRef.camera.x;
+          // const initialCameraY = stateRef.camera.y;
+          // const animate = (time: number) => {
+          //   const progress = Math.min((time - start) / duration, 1);
+          //   const additionX = centerMoveX * progress;
+          //   const additionY = centerMoveY * progress;
+          //   setCamera((prev) => {
+          //     return {
+          //       ...prev,
+          //       x: initialCameraX - additionX,
+          //       y: initialCameraY - additionY,
+          //     };
+          //   });
+          //   if (progress < 1) {
+          //     requestAnimationFrame(animate);
+          //   }
+          // };
+          // requestAnimationFrame(animate);
         }}
       >
         duplicate

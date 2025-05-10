@@ -71,10 +71,10 @@ export function MultipleBlockRotator({
 
     let newAngle = angle - startAngleRef.current;
 
-    // if (event.shiftKey) {
-    //   const step = Math.PI / 8;
-    //   newAngle = Math.round(newAngle / step) * step;
-    // }
+    if (event.shiftKey) {
+      const step = Math.PI / 4;
+      newAngle = Math.round(newAngle / step) * step;
+    }
 
     const newBlockMap = { ...blockMap };
     if (event.altKey) {

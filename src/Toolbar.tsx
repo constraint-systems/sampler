@@ -18,6 +18,7 @@ import { ToolDirection } from "./ToolDirection";
 import { ToolDuplicator } from "./ToolDuplicator";
 import { ToolAddCamera } from "./ToolAddCamera";
 import { ToolAlign } from "./ToolAlign";
+import { ToolAngles } from "./ToolAngles";
 
 export function Toolbar() {
   const [blockMap] = useAtom(BlockMapAtom);
@@ -66,6 +67,7 @@ export function Toolbar() {
             <ToolBlendSelector blocks={selectedBlocks} />
           ) : null}
           {blocksAreSelected ? <ToolFlipper blocks={selectedBlocks} /> : null}
+          {blocksAreSelected ? <ToolAngles blocks={selectedBlocks} /> : null}
           {singleBlockSelected ? <ToolCrop block={selectedBlocks[0]} /> : null}
           {blocksAreSelected ? <ToolDirection /> : null}
           {webcamIsSelected ? <ToolStamp /> : null}
@@ -74,7 +76,7 @@ export function Toolbar() {
           ) : null}
         </div>
       </div>
-      <div className="absolute left-0 bottom-11 flex flex-col gap-2">
+      <div className="absolute left-0 bottom-11 flex flex-col gap-2 pointer-events-none">
         {selectedBlockIds.length > 1 ? <ToolAlign /> : null}
       </div>
       <div className="absolute left-0 bottom-0 w-full pointer-events-none">

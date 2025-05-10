@@ -137,8 +137,7 @@ export function CropModal() {
           mediaHeight = availableWidth / aspectRatio;
         }
         mediaContainerRef.current!.style.height = `${mediaHeight}px`;
-        const leftOffset =
-          (availableWidth - mediaWidth) / 2 + topSet.left;
+        const leftOffset = (availableWidth - mediaWidth) / 2 + topSet.left;
         setStyleState({
           left: leftOffset,
           top: 0,
@@ -181,21 +180,23 @@ export function CropModal() {
             if (e.button === 0) {
               e.currentTarget.setPointerCapture(e.pointerId);
               const rect = mediaContainerRef.current!.getBoundingClientRect();
-              dragRef.current.start.x = e.clientX - (rect?.left || 0) - styleState.left,
-              dragRef.current.start.y = e.clientY - (rect?.top || 0);
-              dragRef.current.current.x = e.clientX - (rect?.left || 0) - styleState.left,
-              dragRef.current.current.y = e.clientY - (rect?.top || 0);
+              (dragRef.current.start.x =
+                e.clientX - (rect?.left || 0) - styleState.left),
+                (dragRef.current.start.y = e.clientY - (rect?.top || 0));
+              (dragRef.current.current.x =
+                e.clientX - (rect?.left || 0) - styleState.left),
+                (dragRef.current.current.y = e.clientY - (rect?.top || 0));
               const isIntersecting =
                 cropState &&
                 pointIntersectsBox(
                   {
                     x: Math.round(
                       (dragRef.current.start.x / styleState.width) *
-                      originalMediaSize.width,
+                        originalMediaSize.width,
                     ),
                     y: Math.round(
                       (dragRef.current.start.y / styleState.height) *
-                      originalMediaSize.height,
+                        originalMediaSize.height,
                     ),
                   },
                   cropState,
@@ -213,7 +214,8 @@ export function CropModal() {
           onPointerMove={(e) => {
             if (dragRef.current.isCreating || dragRef.current.isMoving) {
               const rect = mediaContainerRef.current?.getBoundingClientRect();
-              dragRef.current.current.x = e.clientX - (rect?.left || 0) - styleState.left;
+              dragRef.current.current.x =
+                e.clientX - (rect?.left || 0) - styleState.left;
               dragRef.current.current.y = e.clientY - (rect?.top || 0);
               if (dragRef.current.isCreating) {
                 setCropState(rawCoordsToCropBox());
@@ -262,7 +264,8 @@ export function CropModal() {
               className="absolute pointer-events-auto border-2 border-blue-500"
               style={{
                 left:
-                  (cropState.x / originalMediaSize.width) * styleState.width + styleState.left,
+                  (cropState.x / originalMediaSize.width) * styleState.width +
+                  styleState.left,
                 top:
                   (cropState.y / originalMediaSize.height) * styleState.height,
                 width:
@@ -272,7 +275,22 @@ export function CropModal() {
                   (cropState.height / originalMediaSize.height) *
                   styleState.height,
               }}
-            />
+            >
+              <CropResizeSides
+                cropState={cropState}
+                setCropState={setCropState}
+                originalMediaSize={originalMediaSize}
+                mediaContainerRef={mediaContainerRef}
+                styleState={styleState}
+              />
+              <CropResizeHandles
+                cropState={cropState}
+                setCropState={setCropState}
+                originalMediaSize={originalMediaSize}
+                mediaContainerRef={mediaContainerRef}
+                styleState={styleState}
+              />
+            </div>
           )}
         </div>
         <div ref={bottomSetRef}>
@@ -311,6 +329,359 @@ export function CropModal() {
   );
 }
 
+function CropResizeHandles({
+  cropState,
+  setCropState,
+  mediaContainerRef,
+  originalMediaSize,
+  styleState,
+}: {
+  cropState: CropBoxType;
+  setCropState: (crop: CropBoxType) => void;
+  originalMediaSize: { width: number; height: number };
+  mediaContainerRef: React.RefObject<HTMLDivElement>;
+  styleState: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+}) {
+  const resizeDragRef = useRef({
+    resizing: false,
+    point1: { x: 0, y: 0 },
+    point2: { x: 0, y: 0 },
+  });
+
+  const corners = ["top-left", "top-right", "bottom-left", "bottom-right"];
+  const size = 16;
+
+  if (!cropState) return null;
+  return corners.map((corner) => {
+    let left = undefined;
+    let top = undefined;
+    let right = undefined;
+    let bottom = undefined;
+    let cursor = "nwse-resize";
+    switch (corner) {
+      case "top-left":
+        left = -size / 2;
+        top = -size / 2;
+        cursor = "nwse-resize";
+        break;
+      case "top-right":
+        right = -size / 2;
+        top = -size / 2;
+        cursor = "nesw-resize";
+        break;
+      case "bottom-left":
+        left = -size / 2;
+        bottom = -size / 2;
+        cursor = "nesw-resize";
+        break;
+      case "bottom-right":
+        right = -size / 2;
+        bottom = -size / 2;
+        cursor = "nwse-resize";
+        break;
+      default:
+        break;
+    }
+
+    return (
+      <div
+        key={corner}
+        className={`absolute`}
+        style={{
+          width: size,
+          height: size,
+          left: left,
+          top: top,
+          right: right,
+          bottom: bottom,
+          cursor: cursor,
+        }}
+        draggable={false}
+        onPointerDown={(e) => {
+          if (e.button === 0) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            resizeDragRef.current.resizing = true;
+            if (corner === "top-left") {
+              resizeDragRef.current.point1.x = cropState.x + cropState.width;
+              resizeDragRef.current.point1.y = cropState.y + cropState.height;
+            } else if (corner === "top-right") {
+              resizeDragRef.current.point1.x = cropState.x;
+              resizeDragRef.current.point1.y = cropState.y + cropState.height;
+            } else if (corner === "bottom-left") {
+              resizeDragRef.current.point1.x = cropState.x + cropState.width;
+              resizeDragRef.current.point1.y = cropState.y;
+            } else if (corner === "bottom-right") {
+              resizeDragRef.current.point1.x = cropState.x;
+              resizeDragRef.current.point1.y = cropState.y;
+            }
+            resizeDragRef.current.point1.x =
+              (resizeDragRef.current.point1.x / originalMediaSize.width) *
+              styleState.width;
+            resizeDragRef.current.point1.y =
+              (resizeDragRef.current.point1.y / originalMediaSize.height) *
+              styleState.height;
+          }
+        }}
+        onPointerMove={(e) => {
+          if (resizeDragRef.current.resizing) {
+            const rect = mediaContainerRef.current!.getBoundingClientRect();
+            const thisX = e.clientX - (rect?.left || 0) - styleState.left;
+            const thisY = e.clientY - (rect?.top || 0);
+            resizeDragRef.current.point2.x = thisX;
+            resizeDragRef.current.point2.y = thisY;
+            const minX = Math.max(
+              0,
+              Math.min(
+                resizeDragRef.current.point1.x,
+                resizeDragRef.current.point2.x,
+              ),
+            );
+            const minY = Math.max(
+              0,
+              Math.min(
+                resizeDragRef.current.point1.y,
+                resizeDragRef.current.point2.y,
+              ),
+            );
+            const maxX = Math.min(
+              styleState.width,
+              Math.max(
+                resizeDragRef.current.point1.x,
+                resizeDragRef.current.point2.x,
+              ),
+            );
+            const maxY = Math.min(
+              styleState.height,
+              Math.max(
+                resizeDragRef.current.point1.y,
+                resizeDragRef.current.point2.y,
+              ),
+            );
+            const x = minX;
+            const y = minY;
+            const width = maxX - minX;
+            const height = maxY - minY;
+            setCropState({
+              x: Math.round((x / styleState.width) * originalMediaSize.width),
+              y: Math.round((y / styleState.height) * originalMediaSize.height),
+              width: Math.round(
+                (width / styleState.width) * originalMediaSize.width,
+              ),
+              height: Math.round(
+                (height / styleState.height) * originalMediaSize.height,
+              ),
+            });
+          }
+        }}
+        onPointerUp={(e) => {
+          if (resizeDragRef.current.resizing) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+            resizeDragRef.current.resizing = false;
+          }
+        }}
+      ></div>
+    );
+  });
+}
+
+function CropResizeSides({
+  cropState,
+  setCropState,
+  mediaContainerRef,
+  originalMediaSize,
+  styleState,
+}: {
+  cropState: CropBoxType;
+  setCropState: (crop: CropBoxType) => void;
+  originalMediaSize: { width: number; height: number };
+  mediaContainerRef: React.RefObject<HTMLDivElement>;
+  styleState: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+}) {
+  const resizeDragRef = useRef({
+    resizing: false,
+    point1: { x: 0, y: 0 },
+    point2: { x: 0, y: 0 },
+  });
+
+  const sides = ["left", "top", "right", "bottom"];
+  const size = 6;
+
+  if (!cropState) return null;
+  return sides.map((side) => {
+    let left = undefined;
+    let top = undefined;
+    let right = undefined;
+    let bottom = undefined;
+    let width = undefined;
+    let height = undefined;
+    let cursor = "nwse-resize";
+    switch (side) {
+      case "left":
+        left = -size / 2;
+        top = 0;
+        bottom = 0;
+        width = size;
+        height = "100%";
+        cursor = "ew-resize";
+        break;
+      case "top":
+        left = 0;
+        top = -size / 2;
+        right = 0;
+        width = "100%";
+        height = size;
+        cursor = "ns-resize";
+        break;
+      case "right":
+        right = -size / 2;
+        top = 0;
+        bottom = 0;
+        width = size;
+        height = "100%";
+        cursor = "ew-resize";
+        break;
+      case "bottom":
+        left = 0;
+        bottom = 0;
+        right = 0;
+        width = "100%";
+        height = size;
+        cursor = "ns-resize";
+        break;
+      default:
+        break;
+    }
+
+    return (
+      <div
+        key={side}
+        className={`absolute`}
+        style={{
+          width: width,
+          height: height,
+          left: left,
+          top: top,
+          right: right,
+          bottom: bottom,
+          cursor: cursor,
+        }}
+        draggable={false}
+        onPointerDown={(e) => {
+          if (e.button === 0) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            resizeDragRef.current.resizing = true;
+            if (side === "left") {
+              resizeDragRef.current.point1.x = cropState.x + cropState.width;
+              resizeDragRef.current.point1.y = cropState.y + cropState.height;
+              resizeDragRef.current.point2.x = cropState.x;
+              resizeDragRef.current.point2.y = cropState.y;
+            } else if (side === "top") {
+              resizeDragRef.current.point1.x = cropState.x + cropState.width;
+              resizeDragRef.current.point1.y = cropState.y + cropState.height;
+              resizeDragRef.current.point2.x = cropState.x;
+              resizeDragRef.current.point2.y = cropState.y;
+            } else if (side === "right") {
+              resizeDragRef.current.point1.x = cropState.x;
+              resizeDragRef.current.point1.y = cropState.y + cropState.height;
+              resizeDragRef.current.point2.x = cropState.x + cropState.width;
+              resizeDragRef.current.point2.y = cropState.y;
+            } else if (side === "bottom") {
+              resizeDragRef.current.point1.x = cropState.x;
+              resizeDragRef.current.point1.y = cropState.y;
+              resizeDragRef.current.point2.x = cropState.x + cropState.width;
+              resizeDragRef.current.point2.y = cropState.y + cropState.height;
+            }
+            resizeDragRef.current.point1.x =
+              (resizeDragRef.current.point1.x / originalMediaSize.width) *
+              styleState.width;
+            resizeDragRef.current.point1.y =
+              (resizeDragRef.current.point1.y / originalMediaSize.height) *
+              styleState.height;
+            resizeDragRef.current.point2.x =
+              (resizeDragRef.current.point2.x / originalMediaSize.width) *
+              styleState.width;
+            resizeDragRef.current.point2.y =
+              (resizeDragRef.current.point2.y / originalMediaSize.height) *
+              styleState.height;
+          }
+        }}
+        onPointerMove={(e) => {
+          if (resizeDragRef.current.resizing) {
+            const rect = mediaContainerRef.current!.getBoundingClientRect();
+            const thisX = e.clientX - (rect?.left || 0) - styleState.left;
+            const thisY = e.clientY - (rect?.top || 0);
+            if (side === "left" || side === "right") {
+              resizeDragRef.current.point2.x = thisX;
+            } else {
+              resizeDragRef.current.point2.y = thisY;
+            }
+            const minX = Math.max(
+              0,
+              Math.min(
+                resizeDragRef.current.point1.x,
+                resizeDragRef.current.point2.x,
+              ),
+            );
+            const minY = Math.max(
+              0,
+              Math.min(
+                resizeDragRef.current.point1.y,
+                resizeDragRef.current.point2.y,
+              ),
+            );
+            const maxX = Math.min(
+              styleState.width,
+              Math.max(
+                resizeDragRef.current.point1.x,
+                resizeDragRef.current.point2.x,
+              ),
+            );
+            const maxY = Math.min(
+              styleState.height,
+              Math.max(
+                resizeDragRef.current.point1.y,
+                resizeDragRef.current.point2.y,
+              ),
+            );
+            const x = minX;
+            const y = minY;
+            const width = maxX - minX;
+            const height = maxY - minY;
+            setCropState({
+              x: Math.round((x / styleState.width) * originalMediaSize.width),
+              y: Math.round((y / styleState.height) * originalMediaSize.height),
+              width: Math.round(
+                (width / styleState.width) * originalMediaSize.width,
+              ),
+              height: Math.round(
+                (height / styleState.height) * originalMediaSize.height,
+              ),
+            });
+          }
+        }}
+        onPointerUp={(e) => {
+          if (resizeDragRef.current.resizing) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+            resizeDragRef.current.resizing = false;
+          }
+        }}
+      ></div>
+    );
+  });
+}
+
 function CropWebcamDisplay({
   block,
   originalMediaSize,
@@ -321,8 +692,10 @@ function CropWebcamDisplay({
   originalMediaSize: { width: number; height: number };
   setOriginalMediaSize: (size: { width: number; height: number }) => void;
   styleState: {
-    left: number; top: number;
-    width: number; height: number
+    left: number;
+    top: number;
+    width: number;
+    height: number;
   };
 }) {
   const [activeStreams] = useAtom(activeStreamsAtom);
@@ -372,8 +745,9 @@ function CropWebcamDisplay({
           marginLeft: styleState.left,
           width: styleState.width,
           height: styleState.height,
-          transform: `scale(${block.flippedHorizontally ? -1 : 1}, ${block.flippedVertically ? -1 : 1
-            })`,
+          transform: `scale(${block.flippedHorizontally ? -1 : 1}, ${
+            block.flippedVertically ? -1 : 1
+          })`,
         }}
         ref={canvasRef}
         width={originalMediaSize.width}

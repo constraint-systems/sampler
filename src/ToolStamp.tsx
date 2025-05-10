@@ -1,13 +1,6 @@
 import { useAtom } from "jotai";
-import {
-  BlockIdsAtom,
-  BlockMapAtom,
-  CameraAtom,
-  StateRefAtom,
-} from "./atoms";
-import {
-  ImageBlockType,
-} from "./types";
+import { BlockIdsAtom, BlockMapAtom, CameraAtom, StateRefAtom } from "./atoms";
+import { ImageBlockType } from "./types";
 import { offsetLookup } from "./consts";
 import { v4 as uuid } from "uuid";
 import { makeZIndex } from "./utils";
@@ -19,10 +12,13 @@ export function useStampBlocks() {
   const [, setCamera] = useAtom(CameraAtom);
   const [stateRef] = useAtom(StateRefAtom);
 
-  return function() {
-    const { stampMoveDirection, stampMoveOffset, blockMap, selectedBlockIds } = stateRef;
+  return function () {
+    const { stampMoveDirection, stampMoveOffset, blockMap, selectedBlockIds } =
+      stateRef;
     if (!stampMoveDirection || !stampMoveOffset) return;
-    const blocks = selectedBlockIds.map((id) => blockMap[id]).filter((block) => block.type === "webcam");
+    const blocks = selectedBlockIds
+      .map((id) => blockMap[id])
+      .filter((block) => block.type === "webcam");
     let centerDistance = Infinity;
     let centerMoveX = 0;
     let centerMoveY = 0;
@@ -75,7 +71,7 @@ export function useStampBlocks() {
       const blockCenterY = block.y + block.height / 2;
       const thisCenterDistance = Math.sqrt(
         (blockCenterX - currentCenter.x) ** 2 +
-        (blockCenterY - currentCenter.y) ** 2,
+          (blockCenterY - currentCenter.y) ** 2,
       );
       if (thisCenterDistance < centerDistance) {
         centerDistance = thisCenterDistance;
@@ -116,14 +112,14 @@ export function useStampBlocks() {
       }));
     }
 
-      setCamera((prev) => {
-        return {
-          ...prev,
-          x: stateRef.camera.x - centerMoveX,
-          y: stateRef.camera.y - centerMoveY,
-        };
-      });
- 
+    // setCamera((prev) => {
+    //   return {
+    //     ...prev,
+    //     x: stateRef.camera.x - centerMoveX,
+    //     y: stateRef.camera.y - centerMoveY,
+    //   };
+    // });
+
     // const duration = 300;
     // const start = performance.now();
     // const initialCameraX = stateRef.camera.x;
@@ -144,7 +140,7 @@ export function useStampBlocks() {
     //   }
     // };
     // requestAnimationFrame(animate);
-  }
+  };
 }
 
 export function ToolStamp() {

@@ -24,61 +24,43 @@ export function BlockRotators({ id }: { id: string }) {
   const dragBind = useDrag(({ first, event, xy: [x, y] }) => {
     event.stopPropagation();
 
-    if (event.altKey) {
-      const angle =
-        Math.atan2(canvasPoint.y - centerY, canvasPoint.x - centerX) +
-        Math.PI / 4;
-      if (first) {
-        startingBlockAngleRef.current = block.rotation || 0;
-        startAngleRef.current = angle;
+    // resizing rotation from https://shihn.ca/posts/2020/resizing-rotated-elements/
+    const centerX = block.x + block.width / 2;
+    const centerY = block.y + block.height / 2;
+    const canvasPoint = screenToCanvas(
+      { x, y },
+      cameraRef.current,
+      zoomContainerRef.current!,
+    );
+    const angle =
+      Math.atan2(canvasPoint.y - centerY, canvasPoint.x - centerX) +
+      Math.PI / 4;
+    if (first) {
+      startingBlockAngleRef.current = block.rotation || 0;
+      startAngleRef.current = angle;
 
-        // rotated corner point
-        oppositeCornerRef.current = {
-          x: block.x + block.width,
-          y: block.y + block.height,
-        };
-      }
-      const newAngle =
-        startingBlockAngleRef.current + (angle - startAngleRef.current);
-      setBlockMap((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          rotation: newAngle,
-        },
-      }));
-    } else {
-      // resizing rotation from https://shihn.ca/posts/2020/resizing-rotated-elements/
-      const centerX = block.x + block.width / 2;
-      const centerY = block.y + block.height / 2;
-      const canvasPoint = screenToCanvas(
-        { x, y },
-        cameraRef.current,
-        zoomContainerRef.current!,
-      );
-      const angle =
-        Math.atan2(canvasPoint.y - centerY, canvasPoint.x - centerX) +
-        Math.PI / 4;
-      if (first) {
-        startingBlockAngleRef.current = block.rotation || 0;
-        startAngleRef.current = angle;
-
-        // rotated corner point
-        oppositeCornerRef.current = {
-          x: block.x + block.width,
-          y: block.y + block.height,
-        };
-      }
-      const newAngle =
-        startingBlockAngleRef.current + (angle - startAngleRef.current);
-      setBlockMap((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          rotation: newAngle,
-        },
-      }));
+      // rotated corner point
+      oppositeCornerRef.current = {
+        x: block.x + block.width,
+        y: block.y + block.height,
+      };
     }
+    let newAngle =
+      startingBlockAngleRef.current + (angle - startAngleRef.current);
+
+    if (event.shiftKey) {
+      // snap to 45 degree angles
+      const snap = Math.PI / 4;
+      newAngle = Math.round(newAngle / snap) * snap;
+    }
+
+    setBlockMap((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        rotation: newAngle,
+      },
+    }));
   });
 
   return (

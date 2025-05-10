@@ -17,7 +17,14 @@ export function ToolDownload() {
           finalCanvasRef.current =
             finalCanvasRef.current || document.createElement("canvas");
 
-          const currentBlocks = stateRef.blockIds.map((id) => {
+          let targetBlockIds = [];
+          if (stateRef.selectedBlockIds.length > 0) {
+            targetBlockIds = stateRef.selectedBlockIds;
+          } else {
+            targetBlockIds = stateRef.blockIds;
+          }
+
+          const currentBlocks = targetBlockIds.map((id) => {
             const block = stateRef.blockMap[id];
             return {
               ...block,
