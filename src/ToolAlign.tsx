@@ -15,7 +15,7 @@ export function ToolAlign() {
 
   return (
     <div className="flex flex-col items-start gap-2">
-      <div className="hidden">
+      <div className="pointer-events-auto">
         <button
           className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700"
           onClick={(e) => {
@@ -67,7 +67,7 @@ export function ToolAlign() {
           right
         </button>
       </div>
-      <div className="hidden">
+      <div className="pointer-events-auto">
         <button
           className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700"
           onClick={(e) => {
