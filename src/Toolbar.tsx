@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BlockIdsAtom,
   BlockMapAtom,
@@ -102,6 +102,7 @@ export function Toolbar() {
           </div>
         </div>
       </div>
+      <ResizerModal />
     </>
   );
 }
@@ -110,4 +111,61 @@ function CameraReadout() {
   const [camera] = useAtom(CameraAtom);
 
   return <div>{Math.round(camera.z * 100)}%</div>;
+}
+
+function ResizerModal() {
+  const [_selectedBox] = useAtom(SelectedBoxAtom);
+  const selectedBox = _selectedBox!;
+  const [newWidth, setNewWidth] = useState(selectedBox.width);
+  const [newHeight, setNewHeight] = useState(selectedBox.height);
+
+  const rawAspectRatio = selectedBox.width / selectedBox.height;
+  const aspectRatio = Math.round(rawAspectRatio * 100) / 100;
+  return (
+    <div className="absolute inset-0 bg-black bg-opacity-80 flex justify-center items-center">
+      <div className="flex flex-col gap-2">
+        <div>Selected size</div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="flex gap-2">
+            <div>{selectedBox.width}</div>
+            <div>
+              <input
+                type="text"
+                className="text-right"
+                value={newWidth}
+                onChange={(e) => setNewWidth(parseInt(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewHeight(Math.round(newWidth / rawAspectRatio));
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div>{selectedBox.height}</div>
+            <div>
+              <input
+                type="text"
+                className="text-right"
+                value={newHeight}
+                onChange={(e) => setNewHeight(parseInt(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setNewWidth(Math.round(newHeight * rawAspectRatio));
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <div>{aspectRatio}</div>
+        </div>
+        <div>
+          <button className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700">
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
