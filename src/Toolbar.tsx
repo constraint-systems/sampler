@@ -57,26 +57,28 @@ export function Toolbar() {
       <div className="absolute left-0 top-0 pointer-events-none px-3 py-2">
         Sampler
       </div>
-      <div className="absolute right-0 top-0 bottom-10 flex flex-col justify-between pointer-events-none">
-        <div className="flex flex-col gap-2 items-end">
+      <div className="absolute right-0 top-0 bottom-10 flex flex-col justify-between pointer-events-none w-[240px] p-3">
+        <div className="flex flex-col gap-2">
           {!webcamBlockExists && <ToolAddCamera />}
           {webcamIsSelected && (
             <ToolCameraSelector webcamBlocks={selectedWebcamBlocks} />
           )}
+          {blocksAreSelected ? <ToolFlipper blocks={selectedBlocks} /> : null}
           {blocksAreSelected ? (
             <ToolBlendSelector blocks={selectedBlocks} />
           ) : null}
-          {blocksAreSelected ? <ToolFlipper blocks={selectedBlocks} /> : null}
-          {blocksAreSelected ? <ToolAngles blocks={selectedBlocks} /> : null}
+          {blocksAreSelected && false ? (
+            <ToolAngles blocks={selectedBlocks} />
+          ) : null}
           {singleBlockSelected ? <ToolCrop block={selectedBlocks[0]} /> : null}
-          {blocksAreSelected ? <ToolDirection /> : null}
+          {blocksAreSelected && false ? <ToolDirection /> : null}
           {webcamIsSelected ? <ToolStamp /> : null}
-          {blocksAreSelected ? (
+          {blocksAreSelected && false ? (
             <ToolDuplicator blocks={selectedBlocks} />
           ) : null}
         </div>
       </div>
-      <div className="absolute left-0 bottom-11 flex flex-col gap-2 pointer-events-none">
+      <div className="hidden absolute left-0 bottom-11 flex flex-col gap-2 pointer-events-none">
         {selectedBlockIds.length > 1 ? <ToolAlign /> : null}
       </div>
       <div className="absolute left-0 bottom-0 w-full pointer-events-none">

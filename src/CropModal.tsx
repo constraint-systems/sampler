@@ -1,12 +1,7 @@
 import { useAtom } from "jotai";
 import { useRef, useState, useMemo, useEffect } from "react";
-import {
-  BlockMapAtom,
-  showCropModalAtom,
-  activeStreamsAtom,
-  StateRefAtom,
-} from "./atoms";
-import { WebcamBlockType, CropBoxType } from "./types";
+import { BlockMapAtom, showCropModalAtom, activeStreamsAtom } from "./atoms";
+import { WebcamBlockType, CropBoxType, BlockType } from "./types";
 import { pointIntersectsBox } from "./utils";
 
 export function CropModal() {
@@ -18,6 +13,7 @@ export function CropModal() {
     height: 0,
   });
   const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
+  const [showCropSizeModal, setShowCropSizeModal] = useState(false);
 
   const block = blockMap[blockId];
   const mediaContainerRef = useRef<HTMLDivElement | null>(null);
@@ -245,6 +241,11 @@ export function CropModal() {
                 marginLeft: styleState.left,
                 width: styleState.width,
                 height: styleState.height,
+                transform: block.flippedHorizontally
+                  ? "scaleX(-1)"
+                  : block.flippedVertically
+                    ? "scaleY(-1)"
+                    : undefined,
               }}
               src={block.src}
               draggable={false}
@@ -295,16 +296,19 @@ export function CropModal() {
         </div>
         <div ref={bottomSetRef}>
           <div className="w-full flex justify-between" ref={bottomSetRef}>
-            <div className="px-2 py-1">
+            <button className="px-2 py-1">
               {originalMediaSize.width}x{originalMediaSize.height}
-            </div>
+            </button>
             <div className="flex">
               {cropState && (
                 <>
-                  <div className="px-2 py-1">
+                  <button
+                    className="px-2 py-1 bg-neutral-700 hover:bg-neutral-600"
+                    onClick={() => setShowCropSizeModal(true)}
+                  >
                     {cropState.x},{cropState.y} {cropState.width}x
                     {cropState.height}
-                  </div>
+                  </button>
                   <button
                     className="px-2 py-1 bg-neutral-700 hover:bg-neutral-600"
                     onClick={() => setCropState(null)}
@@ -323,6 +327,122 @@ export function CropModal() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+      {showCropSizeModal && cropState ? (
+        <CropSizeModal
+          block={block}
+          originalMediaSize={originalMediaSize}
+          cropState={cropState!}
+          setCropState={setCropState}
+          setShowCropSizeModal={setShowCropSizeModal}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function CropSizeModal({
+  originalMediaSize,
+  cropState,
+  setCropState,
+  setShowCropSizeModal,
+}: {
+  block: BlockType;
+  originalMediaSize: { width: number; height: number };
+  cropState: CropBoxType;
+  setCropState: (crop: CropBoxType) => void;
+  setShowCropSizeModal: (show: boolean) => void;
+}) {
+  const [_cropState, _setCropState] = useState<CropBoxType>(cropState);
+
+  function handleSave() {
+    const finalCropState = { ..._cropState! };
+    // make sure x and y are within bounds
+    const xCheck = originalMediaSize.width - finalCropState.x;
+    const yCheck = originalMediaSize.height - finalCropState.y;
+    if (finalCropState!.x > xCheck) {
+      finalCropState!.x = originalMediaSize.width - finalCropState.width;
+    }
+    if (finalCropState!.y > yCheck) {
+      finalCropState!.y = originalMediaSize.height - finalCropState!.height;
+    }
+    const widthCheck = originalMediaSize.width - finalCropState!.x;
+    const heightCheck = originalMediaSize.height - finalCropState!.y;
+    if (finalCropState!.width > widthCheck) {
+      finalCropState!.width = widthCheck;
+    }
+    if (finalCropState!.height > heightCheck) {
+      finalCropState!.height = heightCheck;
+    }
+    setCropState(finalCropState!);
+    _setCropState(finalCropState!);
+  }
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+      <div className="bg-neutral-800 max-w-[400px] flex flex-col gap-2 overflow-hidden p-4">
+        <div>Set crop</div>
+        <div className="flex gap-2 overflow-hidden">
+          <input
+            className="bg-neutral-900 px-2 py-1 w-1/2"
+            type="number"
+            value={_cropState!.x}
+            onChange={(e) =>
+              _setCropState({ ..._cropState!, x: parseInt(e.target.value) })
+            }
+          />
+          <div>,</div>
+          <input
+            type="number"
+            className="bg-neutral-900 px-2 py-1 w-1/2"
+            value={_cropState!.y}
+            onChange={(e) =>
+              _setCropState({ ..._cropState!, y: parseInt(e.target.value) })
+            }
+          />
+        </div>
+        <div className="flex gap-2 overflow-hidden">
+          <input
+            className="bg-neutral-900 px-2 py-1 w-1/2"
+            type="number"
+            value={_cropState!.width}
+            onChange={(e) =>
+              _setCropState({ ..._cropState!, width: parseInt(e.target.value) })
+            }
+          />
+          <div>x</div>
+          <input
+            className="bg-neutral-900 px-2 py-1 w-1/2"
+            type="number"
+            value={_cropState!.height}
+            onChange={(e) =>
+              _setCropState({
+                ..._cropState!,
+                height: parseInt(e.target.value),
+              })
+            }
+          />
+        </div>
+        <div className="flex gap-2 justify-end">
+          <button
+            className="px-2 py-1 mt-1 underline"
+            onClick={() => {
+              setShowCropSizeModal(false);
+              _setCropState(cropState);
+            }}
+          >
+            cancel
+          </button>
+          <button
+            className="px-12 py-1 bg-neutral-700 mt-1 hover:bg-neutral-600"
+            onClick={() => {
+              handleSave();
+              setShowCropSizeModal(false);
+            }}
+          >
+            save
+          </button>
         </div>
       </div>
     </div>

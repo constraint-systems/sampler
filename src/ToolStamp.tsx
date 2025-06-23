@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { BlockIdsAtom, BlockMapAtom, CameraAtom, StateRefAtom } from "./atoms";
+import { activeStreamsAtom, BlockIdsAtom, BlockMapAtom, CameraAtom, StateRefAtom } from "./atoms";
 import { ImageBlockType } from "./types";
 import { offsetLookup } from "./consts";
 import { v4 as uuid } from "uuid";
@@ -10,6 +10,7 @@ export function useStampBlocks() {
   const [, setBlockIds] = useAtom(BlockIdsAtom);
   const [, setBlockMap] = useAtom(BlockMapAtom);
   const [, setCamera] = useAtom(CameraAtom);
+  const [activeStreams] = useAtom(activeStreamsAtom)
   const [stateRef] = useAtom(StateRefAtom);
 
   return function () {
@@ -82,7 +83,7 @@ export function useStampBlocks() {
       const canvas = document.getElementById(
         "canvas-" + block.id,
       ) as HTMLCanvasElement;
-      const dataUrl = canvas.toDataURL();
+      const dataUrl = activeStreams[block.src as string]?.refs.canvas?.toDataURL();
       const newId = uuid();
       const newBlock = {
         id: newId,
@@ -91,9 +92,10 @@ export function useStampBlocks() {
         width: block.width,
         height: block.height,
         rotation: block.rotation,
-        flippedHorizontally: false,
-        flippedVertically: false,
+        flippedHorizontally: block.flippedHorizontally,
+        flippedVertically: block.flippedVertically,
         src: dataUrl,
+        crop: block.crop,
         blend: block.blend,
         type: "image",
         zIndex: makeZIndex(),
@@ -147,16 +149,14 @@ export function ToolStamp() {
   const stampBlocks = useStampBlocks();
 
   return (
-    <div className="flex flex-col items-end">
-      <button
-        className="px-3 py-1 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
-        onClick={(e) => {
-          e.stopPropagation();
-          stampBlocks();
-        }}
-      >
-        stamp
-      </button>
-    </div>
+    <button
+      className="px-3 py-1 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
+      onClick={(e) => {
+        e.stopPropagation();
+        stampBlocks();
+      }}
+    >
+      stamp
+    </button>
   );
 }

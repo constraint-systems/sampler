@@ -7,14 +7,14 @@ export function ToolCrop({ block }: { block: BlockType }) {
   const [showCropModal, setShowCropModal] = useAtom(showCropModalAtom);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex">
       <button
-        className={`px-3 py-1 pointer-events-auto bg-neutral-800 hover:bg-neutral-700`}
+        className={`px-3 py-1 pointer-events-auto hover:bg-neutral-700 w-full ${block.crop ? "bg-neutral-700" : "bg-neutral-800"}`}
         onClick={() => {
           setShowCropModal(block.id);
         }}
       >
-        crop
+        {block.crop ? "edit crop" : "crop"}
       </button>
     </div>
   );

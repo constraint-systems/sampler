@@ -1,4 +1,4 @@
-import { act, useEffect } from "react";
+import { useEffect } from "react";
 import { useAtom } from "jotai";
 import { activeStreamsAtom, BlockIdsAtom, BlockMapAtom } from "./atoms";
 
@@ -12,7 +12,13 @@ export function useStream() {
     for (const key of streamKeys) {
       const activeStream = activeStreams[key];
       if (!activeStream) continue;
-      if (activeStream.stream && !activeStream.refs.video) {
+      if (!activeStream.refs)
+        activeStream.refs = {
+          video: null,
+          canvas: null,
+          drawRequest: null,
+        };
+      if (activeStream.stream && !activeStream.refs?.video) {
         activeStream.refs.video = document.createElement("video");
         activeStream.refs.video.style.position = "absolute";
         activeStream.refs.video.style.left = "0";
@@ -50,10 +56,11 @@ export function useStream() {
     }
   }, [activeStreams]);
 
-
   useEffect(() => {
     // cleanup
-    const webcamBlocks = blockIds.map((id) => blockMap[id]).filter((block) => block.type === "webcam");
+    const webcamBlocks = blockIds
+      .map((id) => blockMap[id])
+      .filter((block) => block.type === "webcam");
     const streamsBeingUsed = new Set(webcamBlocks.map((block) => block.src));
     const streamKeys = Object.keys(activeStreams);
     for (const key of streamKeys) {
@@ -75,5 +82,5 @@ export function useStream() {
         });
       }
     }
- }, [blockIds, blockMap]);
+  }, [blockIds, blockMap]);
 }

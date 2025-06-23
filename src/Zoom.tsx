@@ -21,6 +21,14 @@ export function Zoom() {
   useEffect(() => {
     function handleWheel(event: WheelEvent) {
       if (zoomContainer) {
+        // if current target is input or textarea, do nothing
+        if (
+          event.target instanceof HTMLElement &&
+          (event.target.tagName === "INPUT" ||
+            event.target.tagName === "TEXTAREA")
+        ) {
+          return;
+        }
         event.preventDefault();
 
         const { clientX: x, clientY: y, deltaX, deltaY, ctrlKey } = event;
@@ -73,9 +81,8 @@ export function Zoom() {
 }
 
 function BlockSelectorCreator() {
- const [camera] = useAtom(CameraAtom);
+  const [camera] = useAtom(CameraAtom);
   const [blockSelectorCreator] = useAtom(BlockSelectorCreatorAtom);
-
 
   return blockSelectorCreator ? (
     <div
@@ -90,5 +97,3 @@ function BlockSelectorCreator() {
     />
   ) : null;
 }
-
-

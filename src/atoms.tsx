@@ -3,7 +3,6 @@ import {
   ActiveStreamType,
   BlockSelectorType,
   BlockType,
-  CameraSettingsType,
   ModeType,
   SizeType,
   StampMoveDirectionType,
@@ -11,7 +10,6 @@ import {
   StateRefType,
 } from "./types";
 import { starterBlocks } from "./starterBlocks";
-import { atomWithStorage } from "jotai/utils";
 
 export const CameraAtom = atom({
   x: 0,
@@ -164,6 +162,6 @@ export const showCropModalAtom = atom<string | null>(null);
 
 export const stampMoveDirectionAtom = atom<StampMoveDirectionType>("↘");
 
-export const stampMoveOffsetAtom = atom<StampMoveOffsetType>("1/4");
+export const stampMoveOffsetAtom = atom<StampMoveOffsetType>("1");
 
 export const devicesAtom = atom<MediaDeviceInfo[]>([]);

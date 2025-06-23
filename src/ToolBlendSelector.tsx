@@ -13,31 +13,35 @@ export function ToolBlendSelector({ blocks }: { blocks: BlockType[] }) {
   }
 
   return (
-    <div className="flex flex-col">
-      {blendOptions.map((item) => (
-        <div
-          key={item}
-          className="flex justify-end">
-          <button
-            className={`px-3 py-1 pointer-events-auto text-right ${item === selection ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setBlockMap((prev) => {
-                const newMap = { ...prev };
-                blocks.forEach((block) => {
-                  newMap[block.id] = {
-                    ...newMap[block.id],
-                    blend: item as BlendTypes,
-                  };
-                });
-                return newMap;
-              });
-            }}
+    <div className="flex">
+      <select
+        className="pointer-events-auto px-3 py-1 focus:outline-none bg-neutral-800 w-full"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        onChange={(e) => {
+          setBlockMap((prev) => {
+            const newMap = { ...prev };
+            blocks.forEach((block) => {
+              newMap[block.id] = {
+                ...newMap[block.id],
+                blend: e.target.value as BlendTypes,
+              };
+            });
+            return newMap;
+          });
+        }}
+      >
+        {blendOptions.map((item) => (
+          <option
+            key={item}
+            value={item}
+            className={`px-3 py-1 pointer-events-auto ${item === selection ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
           >
             {item}
-          </button>
-        </div>
-      ))}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
