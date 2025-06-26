@@ -1,11 +1,13 @@
 import { useAtom } from "jotai";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BlockIdsAtom,
   BlockMapAtom,
   CameraAtom,
   SelectedBlockIdsAtom,
   SelectedBoxAtom,
+  ShowCropModalAtom,
+  showResizerModalAtom,
 } from "./atoms";
 import { useStream } from "./useStream";
 import { ToolCameraSelector } from "./ToolCameraSelector";
@@ -19,12 +21,15 @@ import { ToolDuplicator } from "./ToolDuplicator";
 import { ToolAddCamera } from "./ToolAddCamera";
 import { ToolAlign } from "./ToolAlign";
 import { ToolAngles } from "./ToolAngles";
+import { CropModal } from "./CropModal";
 
 export function Toolbar() {
   const [blockMap] = useAtom(BlockMapAtom);
   const [blockIds] = useAtom(BlockIdsAtom);
   const [selectedBox] = useAtom(SelectedBoxAtom);
   const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const [showCropModal] = useAtom(ShowCropModalAtom);
+  const [showResizerModal] = useAtom(showResizerModalAtom);
   useStream();
 
   const selectedBlocks = useMemo(() => {
@@ -91,12 +96,7 @@ export function Toolbar() {
             {selectedBlockIds.length > 0 ? (
               <>
                 <div>{`${selectedBlockIds.length}`}</div>
-                {selectedBox ? (
-                  <div>
-                    {Math.round(selectedBox.width)}x
-                    {Math.round(selectedBox.height)}
-                  </div>
-                ) : null}
+                {selectedBox ? <ResizerReadout /> : null}
               </>
             ) : (
               <div>{`0`}</div>
@@ -104,8 +104,23 @@ export function Toolbar() {
           </div>
         </div>
       </div>
-      <ResizerModal />
+      {showCropModal && <CropModal />}
+      {showResizerModal && <ResizerModal />}
     </>
+  );
+}
+
+function ResizerReadout() {
+  const [selectedBox] = useAtom(SelectedBoxAtom);
+  const [, setShowModal] = useAtom(showResizerModalAtom);
+
+  return (
+    <button
+      className="px-2 py-1 bg-neutral-800 hover:bg-neutral-700 pointer-events-auto"
+      onClick={() => setShowModal(true)}
+    >
+      {Math.round(selectedBox!.width)}x{Math.round(selectedBox!.height)}
+    </button>
   );
 }
 
@@ -118,53 +133,103 @@ function CameraReadout() {
 function ResizerModal() {
   const [_selectedBox] = useAtom(SelectedBoxAtom);
   const selectedBox = _selectedBox!;
-  const [newWidth, setNewWidth] = useState(selectedBox.width);
-  const [newHeight, setNewHeight] = useState(selectedBox.height);
+  const [newWidth, setNewWidth] = useState(Math.round(selectedBox.width));
+  const [, setShowModal] = useAtom(showResizerModalAtom);
+  const [newHeight, setNewHeight] = useState(Math.round(selectedBox.height));
+  const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
+  const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const selectedBlocks = selectedBlockIds.map((id) => blockMap[id]);
 
   const rawAspectRatio = selectedBox.width / selectedBox.height;
-  const aspectRatio = Math.round(rawAspectRatio * 100) / 100;
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowModal(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [setShowModal]);
+
+  function handleSave() {
+    const width = newWidth;
+    const height = newHeight;
+    const centerX = selectedBox.x + selectedBox.width / 2;
+    const centerY = selectedBox.y + selectedBox.height / 2;
+    const newX = centerX - width / 2;
+    const newY = centerY - height / 2;
+    let newBlockMap = { ...blockMap };
+    for (const block of selectedBlocks) {
+      const xRatio = (block.x - selectedBox.x) / selectedBox.width;
+      const yRatio = (block.y - selectedBox.y) / selectedBox.height;
+      const newBlockX = newX + xRatio * width;
+      const newBlockY = newY + yRatio * height;
+      newBlockMap[block.id] = {
+        ...block,
+        x: newBlockX,
+        y: newBlockY,
+        width: (block.width / selectedBox.width) * width,
+        height: (block.height / selectedBox.height) * height,
+      };
+    }
+    setBlockMap(newBlockMap);
+    setShowModal(false);
+  }
+
   return (
     <div className="absolute inset-0 bg-black bg-opacity-80 flex justify-center items-center">
-      <div className="flex flex-col gap-2">
-        <div>Selected size</div>
-        <div className="flex flex-col items-start gap-2">
-          <div className="flex gap-2">
-            <div>{selectedBox.width}</div>
-            <div>
-              <input
-                type="text"
-                className="text-right"
-                value={newWidth}
-                onChange={(e) => setNewWidth(parseInt(e.target.value))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setNewHeight(Math.round(newWidth / rawAspectRatio));
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <div>{selectedBox.height}</div>
-            <div>
-              <input
-                type="text"
-                className="text-right"
-                value={newHeight}
-                onChange={(e) => setNewHeight(parseInt(e.target.value))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setNewWidth(Math.round(newHeight * rawAspectRatio));
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <div>{aspectRatio}</div>
+      <div className="flex flex-col gap-2 bg-neutral-900 p-4 w-[400px]">
+        <div className="mb-1">Selected size</div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            className="focus:outline-none px-2 py-1 w-1/2"
+            value={newWidth}
+            onChange={(e) => setNewWidth(parseInt(e.target.value))}
+            onBlur={() => {
+              setNewHeight(Math.round(newWidth / rawAspectRatio));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setNewHeight(Math.round(newWidth / rawAspectRatio));
+              }
+            }}
+          />
+          <div className="py-1">x</div>
+          <input
+            type="number"
+            className="focus:outline-none px-2 py-1 w-1/2"
+            value={newHeight}
+            onChange={(e) => setNewHeight(parseInt(e.target.value))}
+            onBlur={() => {
+              setNewWidth(Math.round(newHeight * rawAspectRatio));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setNewWidth(Math.round(newHeight * rawAspectRatio));
+              }
+            }}
+          />
         </div>
-        <div>
-          <button className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700">
-            Update
+        <div className="flex justify-end gap-2 mt-1">
+          <button
+            className="px-3 py-1 underline"
+            onClick={() => {
+              setShowModal(false);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-10 py-1 bg-neutral-800 hover:bg-neutral-700"
+            onClick={() => {
+              handleSave();
+            }}
+          >
+            Save
           </button>
         </div>
       </div>

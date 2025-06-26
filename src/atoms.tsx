@@ -158,10 +158,12 @@ export const videoCanvasRefAtom = atom<{ current: HTMLCanvasElement }>({
 export const isDraggingAtom = atom(false);
 
 // maybe expand to images later
-export const showCropModalAtom = atom<string | null>(null);
+export const ShowCropModalAtom = atom<string | null>(null);
 
 export const stampMoveDirectionAtom = atom<StampMoveDirectionType>("↘");
 
 export const stampMoveOffsetAtom = atom<StampMoveOffsetType>("1");
 
 export const devicesAtom = atom<MediaDeviceInfo[]>([]);
+
+export const showResizerModalAtom = atom(false);

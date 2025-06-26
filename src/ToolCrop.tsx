@@ -1,10 +1,9 @@
 import { useAtom } from "jotai";
-import { BlockMapAtom, showCropModalAtom } from "./atoms";
+import { ShowCropModalAtom } from "./atoms";
 import { BlockType } from "./types";
-import { FlipHorizontal2, FlipVertical2 } from "lucide-react";
 
 export function ToolCrop({ block }: { block: BlockType }) {
-  const [showCropModal, setShowCropModal] = useAtom(showCropModalAtom);
+  const [, setShowCropModal] = useAtom(ShowCropModalAtom);
 
   return (
     <div className="flex">

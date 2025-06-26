@@ -1,11 +1,11 @@
 import { useAtom } from "jotai";
 import { useRef, useState, useMemo, useEffect } from "react";
-import { BlockMapAtom, showCropModalAtom, activeStreamsAtom } from "./atoms";
+import { BlockMapAtom, ShowCropModalAtom, activeStreamsAtom } from "./atoms";
 import { WebcamBlockType, CropBoxType, BlockType } from "./types";
 import { pointIntersectsBox } from "./utils";
 
 export function CropModal() {
-  const [blockId, setShowCropModal] = useAtom(showCropModalAtom);
+  const [blockId, setShowCropModal] = useAtom(ShowCropModalAtom);
   if (!blockId) return null;
 
   const [originalMediaSize, setOriginalMediaSize] = useState({
