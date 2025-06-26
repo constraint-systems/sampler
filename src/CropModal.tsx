@@ -156,7 +156,7 @@ export function CropModal() {
   }, [cropState, block.crop]);
 
   return (
-    <div className="absolute inset-0 pointer-events-auto flex">
+    <div className="absolute select-none inset-0 pointer-events-auto flex">
       <div className="m-auto bg-neutral-800 w-full pointer-events-auto">
         <div className="w-full flex flex-col" ref={topSetRef}>
           <div className="flex justify-between">

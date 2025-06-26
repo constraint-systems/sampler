@@ -36,6 +36,7 @@ export type ImageBlockType = BaseBlockType & {
   flippedHorizontally: boolean;
   flippedVertically: boolean;
   blend: BlendTypes;
+  originalMediaSize: SizeType | null;
 };
 
 export type WebcamBlockType = BaseBlockType & {
@@ -45,6 +46,7 @@ export type WebcamBlockType = BaseBlockType & {
   flippedHorizontally: boolean;
   flippedVertically: boolean;
   // id that matches camera settings for stream
+  originalMediaSize: SizeType | null;
   src: string | null
 };
 

@@ -21,9 +21,9 @@ export function ToolFlipper({ blocks }: { blocks: BlockType[] }) {
   }
 
   return (
-    <div className="flex">
+    <div className="flex gap-2">
       <button
-        className={`px-3 w-1/2 pointer-events-auto text-center py-1 text-left ${horizontalState === "true" ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
+        className={`px-3 w-1/2 pointer-events-auto text-center py-1 ${horizontalState === "true" ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
         onClick={() => {
           setBlockMap((prev) => {
             const newMap = { ...prev };
@@ -40,7 +40,7 @@ export function ToolFlipper({ blocks }: { blocks: BlockType[] }) {
         ←→
       </button>
       <button
-        className={`px-3 py-1 w-1/2 text-center pointer-events-auto text-left ${verticalState === "true" ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
+        className={`px-3 py-1 w-1/2 text-center pointer-events-auto ${verticalState === "true" ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
         onClick={() => {
           setBlockMap((prev) => {
             const newMap = { ...prev };

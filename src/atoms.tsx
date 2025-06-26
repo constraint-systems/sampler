@@ -14,7 +14,7 @@ import { starterBlocks } from "./starterBlocks";
 export const CameraAtom = atom({
   x: 0,
   y: 0,
-  z: 1,
+  z: 0.5,
 });
 
 export const ZoomContainerAtom = atom<HTMLDivElement | null>(null);

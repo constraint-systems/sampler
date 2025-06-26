@@ -27,7 +27,6 @@ export function SingleBlockResizer() {
   const zoomContainerRef = useRef(zoomContainer);
   zoomContainerRef.current = zoomContainer;
 
-  // reimplement?
   const preserveAspectRatio = block.type === "image" || block.type === "webcam";
 
   const size = 16;

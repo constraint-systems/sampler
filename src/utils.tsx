@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BlockType, BoxType, PointType } from "./types";
+import { BlockType, BoxType, PointType, SizeType } from "./types";
 
 // load image as promise
 export function loadImage(src: string): Promise<HTMLImageElement> {
@@ -197,4 +197,27 @@ export function getRotatedExtents(block: BlockType) {
   const width = maxX - minX;
   const height = maxY - minY;
   return { minX, maxX, minY, maxY, width, height, blockId: block.id };
+}
+
+export function confineCrop(crop: BoxType, size: SizeType): BoxType {
+  const confinedCrop = { ...crop };
+  if (confinedCrop.width > size.width) {
+    confinedCrop.width = size.width;
+  }
+  if (confinedCrop.height > size.height) {
+    confinedCrop.height = size.height;
+  }
+  if (confinedCrop.x < 0) {
+    confinedCrop.x = 0;
+  }
+  if (confinedCrop.y < 0) {
+    confinedCrop.y = 0;
+  }
+  if (confinedCrop.x + confinedCrop.width > size.width) {
+    confinedCrop.x = size.width - confinedCrop.width;
+  }
+  if (confinedCrop.y + confinedCrop.height > size.height) {
+    confinedCrop.y = size.height - confinedCrop.height;
+  }
+  return confinedCrop;
 }

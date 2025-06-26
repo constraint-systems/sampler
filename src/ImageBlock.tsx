@@ -81,6 +81,17 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
               width: imageRef.current.naturalWidth,
               height: imageRef.current.naturalHeight,
             });
+            // TODO replace naturalSize with originalMediaSize
+            setBlockMap((prev) => ({
+              ...prev,
+              [block.id]: {
+                ...block,
+                originalMediaSize: {
+                  width: imageRef.current!.naturalWidth,
+                  height: imageRef.current!.naturalHeight,
+                },
+              },
+            }));
           }
         }}
         style={{

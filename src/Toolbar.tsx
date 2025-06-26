@@ -22,6 +22,7 @@ import { ToolAddCamera } from "./ToolAddCamera";
 import { ToolAlign } from "./ToolAlign";
 import { ToolAngles } from "./ToolAngles";
 import { CropModal } from "./CropModal";
+import { ToolAddImage } from "./ToolAddImage";
 
 export function Toolbar() {
   const [blockMap] = useAtom(BlockMapAtom);
@@ -62,9 +63,12 @@ export function Toolbar() {
       <div className="absolute left-0 top-0 pointer-events-none px-3 py-2">
         Sampler
       </div>
-      <div className="absolute right-0 top-0 bottom-10 flex flex-col justify-between pointer-events-none w-[240px] p-3">
+      <div className="absolute right-0 top-0 flex flex-col justify-between pointer-events-auto w-[240px] p-3 bg-neutral-900 bg-opacity-90">
         <div className="flex flex-col gap-2">
-          {!webcamBlockExists && <ToolAddCamera />}
+          <div className="flex gap-2">
+            <ToolAddCamera />
+            <ToolAddImage />
+          </div>
           {webcamIsSelected && (
             <ToolCameraSelector webcamBlocks={selectedWebcamBlocks} />
           )}
@@ -194,7 +198,12 @@ function ResizerModal() {
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                setNewHeight(Math.round(newWidth / rawAspectRatio));
+                const ratioHeight = Math.round(newWidth / rawAspectRatio);
+                if (ratioHeight !== newHeight) {
+                  setNewHeight(ratioHeight);
+                } else {
+                  handleSave();
+                }
               }
             }}
           />
@@ -209,7 +218,12 @@ function ResizerModal() {
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                setNewWidth(Math.round(newHeight * rawAspectRatio));
+                const ratioWidth = Math.round(newHeight * rawAspectRatio);
+                if (ratioWidth !== newWidth) {
+                  setNewWidth(ratioWidth);
+                } else {
+                  handleSave();
+                }
               }
             }}
           />

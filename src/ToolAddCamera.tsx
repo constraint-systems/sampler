@@ -13,11 +13,9 @@ export function ToolAddCamera() {
   const [activeStreams] = useAtom(activeStreamsAtom);
 
   return (
-    <div className="flex">
       <button
-        className={`px-3 py-1 text-left pointer-events-auto bg-neutral-800 hover:bg-neutral-700`}
+        className={`py-1 w-1/2 text-center pointer-events-auto bg-neutral-800 hover:bg-neutral-700`}
         onClick={() => {
-
           const newId = uuid();
           const centerPoint = screenToCanvas({ x: window.innerWidth / 2, y: window.innerHeight / 2 }, stateRef.camera!, stateRef.zoomContainer!);
           const starterWidth = 640;
@@ -50,6 +48,5 @@ export function ToolAddCamera() {
       >
         +camera
       </button>
-    </div>
   );
 }

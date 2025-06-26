@@ -30,6 +30,28 @@ export function WebcamBlockRender({
 
   const videoSize = block.src ? activeStreams[block.src]?.videoSize : null;
 
+  console.log(block);
+
+  useEffect(() => {
+    if (videoSize) {
+      console.log("why not set it?");
+      console.log(block.id);
+      console.log(videoSize);
+      const mediaSize = {
+        width: videoSize.width,
+        height: videoSize.height,
+      };
+      console.log(mediaSize);
+      setBlockMap((prev) => ({
+        ...prev,
+        [block.id]: {
+          ...prev[block.id],
+          originalMediaSize: mediaSize,
+        },
+      }));
+    }
+  }, [videoSize]);
+
   useEffect(() => {
     if (block.src === null) {
       const activeStreamKeys = Object.keys(activeStreams);
@@ -37,7 +59,7 @@ export function WebcamBlockRender({
         setBlockMap((prev) => ({
           ...prev,
           [block.id]: {
-            ...block,
+            ...prev[block.id],
             src: activeStreamKeys[0],
           },
         }));
@@ -58,7 +80,7 @@ export function WebcamBlockRender({
         setBlockMap((prev) => ({
           ...prev,
           [block.id]: {
-            ...block,
+            ...prev[block.id],
             width: block.height * targetAspectRatio,
           },
         }));
@@ -66,7 +88,7 @@ export function WebcamBlockRender({
         setBlockMap((prev) => ({
           ...prev,
           [block.id]: {
-            ...block,
+            ...prev[block.id],
             height: block.width / targetAspectRatio,
           },
         }));
@@ -75,7 +97,9 @@ export function WebcamBlockRender({
   }, [videoSize, block.crop]);
 
   useEffect(() => {
-    const videoCanvas = block.src ? activeStreams[block.src]?.refs.canvas : null
+    const videoCanvas = block.src
+      ? activeStreams[block.src]?.refs.canvas
+      : null;
     if (videoCanvas && canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d")!;
       function draw() {
@@ -94,19 +118,27 @@ export function WebcamBlockRender({
         if (block.crop) {
           ctx.drawImage(
             videoCanvas,
-            (block.flippedHorizontally ? (videoCanvas.width - block.crop.x - block.crop.width) : block.crop.x),
-            (block.flippedVertically ? (videoCanvas.height - block.crop.y - block.crop.height) : block.crop.y),
+            block.flippedHorizontally
+              ? videoCanvas.width - block.crop.x - block.crop.width
+              : block.crop.x,
+            block.flippedVertically
+              ? videoCanvas.height - block.crop.y - block.crop.height
+              : block.crop.y,
             block.crop.width,
             block.crop.height,
-            0 + (block.flippedHorizontally ? videoCanvas.width - block.crop.width : 0),
-            0 + (block.flippedVertically ? videoCanvas.height - block.crop.height : 0),
+            0 +
+              (block.flippedHorizontally
+                ? videoCanvas.width - block.crop.width
+                : 0),
+            0 +
+              (block.flippedVertically
+                ? videoCanvas.height - block.crop.height
+                : 0),
             block.crop.width,
             block.crop.height,
           );
         } else {
-          ctx.drawImage(
-            videoCanvas, 0, 0
-          )
+          ctx.drawImage(videoCanvas, 0, 0);
         }
         if (block.flippedHorizontally || block.flippedVertically) {
           ctx.restore();
