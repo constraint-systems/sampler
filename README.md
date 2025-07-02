@@ -1,6 +1,4 @@
-# Blocks
-
-Canvas image creation. Work in progress.
+# Sampler
 
 `npm install`
 `npm run dev`
