@@ -53,12 +53,22 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
       }
       ctx.drawImage(
         imageRef.current!,
-        (block.flippedHorizontally ? (imageRef.current!.naturalWidth - block.crop.x - block.crop.width) : block.crop.x),
-        (block.flippedVertically ? (imageRef.current!.naturalHeight - block.crop.y - block.crop.height) : block.crop.y),
+        block.flippedHorizontally
+          ? imageRef.current!.naturalWidth - block.crop.x - block.crop.width
+          : block.crop.x,
+        block.flippedVertically
+          ? imageRef.current!.naturalHeight - block.crop.y - block.crop.height
+          : block.crop.y,
         block.crop.width,
         block.crop.height,
-        0 + (block.flippedHorizontally ? imageRef.current!.naturalWidth - block.crop.width : 0),
-        0 + (block.flippedVertically ? imageRef.current!.naturalHeight - block.crop.height : 0),
+        0 +
+          (block.flippedHorizontally
+            ? imageRef.current!.naturalWidth - block.crop.width
+            : 0),
+        0 +
+          (block.flippedVertically
+            ? imageRef.current!.naturalHeight - block.crop.height
+            : 0),
         block.crop.width,
         block.crop.height,
       );
@@ -66,40 +76,61 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
         ctx.restore();
       }
     }
-  }, [naturalSize, block.crop, block.flippedHorizontally, block.flippedVertically]);
+  }, [
+    naturalSize,
+    block.crop,
+    block.flippedHorizontally,
+    block.flippedVertically,
+  ]);
 
+  const canvasLoadedRef = useRef(false);
   return (
-    <>
-      <img
-        ref={imageRef}
-        draggable={false}
-        id={'image-' + block.id}
-        src={block.src}
-        onLoad={() => {
-          if (imageRef.current) {
-            setNaturalSize({
-              width: imageRef.current.naturalWidth,
-              height: imageRef.current.naturalHeight,
-            });
-            // TODO replace naturalSize with originalMediaSize
-            setBlockMap((prev) => ({
-              ...prev,
-              [block.id]: {
-                ...block,
-                originalMediaSize: {
-                  width: imageRef.current!.naturalWidth,
-                  height: imageRef.current!.naturalHeight,
+    <div className="absolute inset-0 touch-none select-none">
+      {block.srcType === "canvas" ? (
+        <canvas
+          ref={(el) => {
+            if (!canvasLoadedRef.current) {
+              el!.width = block.canvas!.width;
+              el!.height = block.canvas!.height;
+              const ctx = el!.getContext("2d")!;
+              ctx.drawImage(block.canvas!, 0, 0);
+              canvasLoadedRef.current = true;
+            }
+          }}
+          className="absolute left-0 top-0 w-full h-full pointer-events-none"
+        />
+      ) : (
+        <img
+          ref={imageRef}
+          draggable={false}
+          id={"image-" + block.id}
+          src={block.src}
+          onLoad={() => {
+            if (imageRef.current) {
+              setNaturalSize({
+                width: imageRef.current.naturalWidth,
+                height: imageRef.current.naturalHeight,
+              });
+              // TODO replace naturalSize with originalMediaSize
+              setBlockMap((prev) => ({
+                ...prev,
+                [block.id]: {
+                  ...block,
+                  originalMediaSize: {
+                    width: imageRef.current!.naturalWidth,
+                    height: imageRef.current!.naturalHeight,
+                  },
                 },
-              },
-            }));
-          }
-        }}
-        style={{
-          width: "100%",
-          height: "100%",
-          transform: `scale(${block.flippedHorizontally ? -1 : 1}, ${block.flippedVertically ? -1 : 1})`,
-        }}
-      />
+              }));
+            }
+          }}
+          style={{
+            width: "100%",
+            height: "100%",
+            transform: `scale(${block.flippedHorizontally ? -1 : 1}, ${block.flippedVertically ? -1 : 1})`,
+          }}
+        />
+      )}
       {block.crop && (
         <canvas
           id={"canvas-" + block.id}
@@ -107,6 +138,6 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
           className="absolute left-0 top-0 w-full h-full pointer-events-none"
         />
       )}
-    </>
+    </div>
   );
 }

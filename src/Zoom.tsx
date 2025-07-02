@@ -1,62 +1,31 @@
 import { useAtom } from "jotai";
-import { useEffect } from "react";
-import {
-  BlockSelectorCreatorAtom,
-  CameraAtom,
-  ZoomContainerAtom,
-} from "./atoms";
+import { CameraAtom, StateRefAtom, ZoomContainerAtom } from "./atoms";
+import { useHandlePointerEvents } from "./input/useHandlePointerEvents";
+import { DragSelectBox } from "./input/useHandleDragSelect";
 import { Blocks } from "./Blocks";
-import { useHandleDropImage, useHandlePasteImage } from "./hooks";
-import { panCamera, zoomCamera } from "./Camera";
-import { useDragAndSelect } from "./useDragAndSelect";
-import { BlockSelected } from "./BlockSelected";
+import { SelectedBox } from "./SelectedBox";
+import { CropTemp } from "./input/useHandleBlockCropDrag";
 
 export function Zoom() {
-  const [camera, setCamera] = useAtom(CameraAtom);
-  const [zoomContainer, setZoomContainer] = useAtom(ZoomContainerAtom);
-  useHandleDropImage();
-  useHandlePasteImage();
-  const useDragBind = useDragAndSelect();
-
-  useEffect(() => {
-    function handleWheel(event: WheelEvent) {
-      if (zoomContainer) {
-        // if current target is input or textarea, do nothing
-        if (
-          event.target instanceof HTMLElement &&
-          (event.target.tagName === "INPUT" ||
-            event.target.tagName === "TEXTAREA")
-        ) {
-          return;
-        }
-        event.preventDefault();
-
-        const { clientX: x, clientY: y, deltaX, deltaY, ctrlKey } = event;
-
-        if (ctrlKey) {
-          setCamera((camera) =>
-            zoomCamera(camera, { x, y }, deltaY / 400, zoomContainer),
-          );
-        } else {
-          setCamera((camera) => panCamera(camera, deltaX, deltaY));
-        }
-      }
-    }
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [zoomContainer, setCamera]);
+  const [camera] = useAtom(CameraAtom);
+  const [stateRef] = useAtom(StateRefAtom);
+  const [, setZoomContainer] = useAtom(ZoomContainerAtom);
+  const pointerEventsBind = useHandlePointerEvents();
 
   return (
     <div
-      {...useDragBind()}
-      className="absolute inset-0 touch-none"
+      {...pointerEventsBind}
+      className="absolute inset-0 active touch-none cursor-crosshair"
+      data-target="zoom-container"
       ref={(div) => {
         if (div) {
+          stateRef.zoomContainer = div;
           setZoomContainer(div);
         }
       }}
     >
       <div
+        className="pointer-events-none"
         style={{
           position: "absolute",
           left: "50%",
@@ -70,30 +39,12 @@ export function Zoom() {
           alignItems: "center",
         }}
       >
-        <div className="relative pointer-events-none">
+        <div className="relative">
           <Blocks />
-          <BlockSelectorCreator />
-          <BlockSelected />
+          <CropTemp />
+          <DragSelectBox />
         </div>
       </div>
     </div>
   );
-}
-
-function BlockSelectorCreator() {
-  const [camera] = useAtom(CameraAtom);
-  const [blockSelectorCreator] = useAtom(BlockSelectorCreatorAtom);
-
-  return blockSelectorCreator ? (
-    <div
-      className="absolute pointer-events-none border-[2px] border-blue-500"
-      style={{
-        left: blockSelectorCreator.x,
-        top: blockSelectorCreator.y,
-        width: blockSelectorCreator.width,
-        height: blockSelectorCreator.height,
-        borderWidth: Math.max(2, 2 / camera.z),
-      }}
-    />
-  ) : null;
 }

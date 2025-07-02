@@ -53,9 +53,10 @@ export function pointIntersectsRotatedBlock(
 }
 
 export function blockIntersectBlocks(
-  { x, y, width, height }: BlockType,
+  box:  BoxType,
   blocks: BlockType[],
 ): BlockType[] {
+  const { x, y, width, height } = box;
   return blocks.filter((block) => {
     return (
       x < block.x + block.width &&
@@ -220,4 +221,19 @@ export function confineCrop(crop: BoxType, size: SizeType): BoxType {
     confinedCrop.y = size.height - confinedCrop.height;
   }
   return confinedCrop;
+}
+
+export function randomHexColor()  {
+  return `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')}`;
+}
+
+export function getBoxBoundsFromBlocks(blocks: BlockType[]): BoxType {
+  if (blocks.length === 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+  const minX = Math.min(...blocks.map((b) => b.x));
+  const minY = Math.min(...blocks.map((b) => b.y));
+  const maxX = Math.max(...blocks.map((b) => b.x + b.width));
+  const maxY = Math.max(...blocks.map((b) => b.y + b.height));
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }

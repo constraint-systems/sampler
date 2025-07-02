@@ -31,8 +31,10 @@ export type BlendTypes =
 
 export type ImageBlockType = BaseBlockType & {
   type: "image";
+  srcType: "url" | "canvas";
   src: string;
   crop: CropBoxType;
+  canvas: HTMLCanvasElement | null;
   flippedHorizontally: boolean;
   flippedVertically: boolean;
   blend: BlendTypes;
@@ -47,7 +49,7 @@ export type WebcamBlockType = BaseBlockType & {
   flippedVertically: boolean;
   // id that matches camera settings for stream
   originalMediaSize: SizeType | null;
-  src: string | null
+  src: string | null;
 };
 
 export type BlockType = ImageBlockType | WebcamBlockType;
@@ -61,8 +63,12 @@ export type StateRefType = {
   selectedBlockIds: string[];
   blockSelector: { x: number; y: number; width: number; height: number } | null;
   selectedBox: BoxType | null;
-  stampMoveDirection: StampMoveDirectionType | null;
+  stampDirection: StampDirectionType | null;
   stampMoveOffset: StampMoveOffsetType | null;
+  activePointers: Map<number, PointType>;
+  undoStack: HistoryEntryType[];
+  redoStack: HistoryEntryType[];
+  activeStreams: Record<string, ActiveStreamType>;
 };
 
 export type ActiveStreamType = {
@@ -70,8 +76,6 @@ export type ActiveStreamType = {
   videoSize: SizeType | null;
   refs: {
     video: HTMLVideoElement | null;
-    canvas: HTMLCanvasElement | null;
-    drawRequest: number | null;
   };
 };
 
@@ -103,7 +107,7 @@ export type BlockSelectorType = {
   length: number;
 };
 
-export type StampMoveDirectionType =
+export type StampDirectionType =
   | "←"
   | "↖"
   | "↑"
@@ -115,3 +119,16 @@ export type StampMoveDirectionType =
   | "↙";
 
 export type StampMoveOffsetType = "1/4" | "1/2" | "3/4" | "1";
+
+export type DragEventTypeType = "first" | "move" | "last";
+export type DragEventType = {
+  id: number;
+  type: DragEventTypeType;
+  event: React.PointerEvent;
+  targetEl: HTMLElement;
+};
+
+export type HistoryEntryType = {
+  undo: Record<string, any>;
+  redo: Record<string, any>;
+};

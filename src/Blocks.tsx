@@ -5,9 +5,9 @@ import {
   CameraAtom,
   SelectedBlockIdsAtom,
 } from "./atoms";
-import { ImageBlockType, WebcamBlockType } from "./types";
+import { WebcamBlockRender } from "./WebcamBlock";
 import { ImageBlock } from "./ImageBlock";
-import { WebcamBlockRender, WebcamBlockUI } from "./WebcamBlock";
+import { SelectedBox } from "./SelectedBox";
 
 export function Blocks() {
   const [blockIds] = useAtom(BlockIdsAtom);
@@ -19,6 +19,9 @@ export function Blocks() {
         })}
       </div>
       <div className="absolute z-5">
+        <SelectedBox />
+      </div>
+      <div className="absolute z-10">
         {blockIds.map((id) => {
           return <BlockUI key={id} id={id} />;
         })}
@@ -27,103 +30,83 @@ export function Blocks() {
   );
 }
 
+export function BlockRender({ id }: { id: string }) {
+  const [blockMap] = useAtom(BlockMapAtom);
+  const block = blockMap[id];
+
+  if (!block) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`absolute touch-none select-none`}
+      style={{
+        left: 0,
+        top: 0,
+        transform: `translate(${block.x}px, ${block.y}px)`,
+        width: block.width,
+        height: block.height,
+        zIndex: block.zIndex,
+        mixBlendMode: 'darken'
+      }}
+    >
+      <BlockRenderFactory id={id} />
+    </div>
+  );
+}
+
+function BlockRenderFactory({ id }: { id: string }) {
+  const [blockMap] = useAtom(BlockMapAtom);
+  const block = blockMap[id];
+
+  if (!block) {
+    return null;
+  }
+
+  switch (block.type) {
+    case "webcam":
+      return <WebcamBlockRender block={block} />;
+    case "image":
+      return <ImageBlock block={block} />;
+    default:
+      return null;
+  }
+}
+
 export function BlockUI({ id }: { id: string }) {
   const [blockMap] = useAtom(BlockMapAtom);
   const block = blockMap[id];
   const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
   const [camera] = useAtom(CameraAtom);
+
   const isSelected = selectedBlockIds.includes(id);
 
-  const rotation = block.rotation || 0;
   return (
     <>
       <div
-        className={`absolute touch-none select-none`}
+        className={`${isSelected ? `${block.type === "webcam" ? "border-red-500" : "border-yellow-500"} cursor-grab` : "cursor-pointer"} absolute active pointer-events-auto touch-none select-none`}
+        data-target={`block-${id}`}
         style={{
           left: 0,
           top: 0,
-          transform: `translate(${block.x}px, ${block.y}px) rotate(${rotation}rad)`,
+          borderWidth: isSelected ? 2 / camera.z : 0,
+          transform: `translate(${block.x}px, ${block.y}px)`,
           width: block.width,
           height: block.height,
           zIndex: block.zIndex,
         }}
       >
-        {isSelected && (
+        {isSelected &&  block.crop ? (
           <div
-            className="absolute inset-0 border-blue-500"
+            className="pointer-events-none absolute -inset-3 border-cyan-500 border-2"
             style={{
-              borderWidth: Math.max(2, 2 / camera.z),
+              borderWidth: 2 / camera.z,
             }}
           />
-        )}
-        <BlockUIFactory id={id} isSelected={isSelected} />
+        ) : null}
+
       </div>
     </>
   );
 }
-
-export function BlockRender({ id }: { id: string }) {
-  const [blockMap] = useAtom(BlockMapAtom);
-  const block = blockMap[id];
-  const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
-  const isSelected = selectedBlockIds.includes(id);
-
-  const rotation = block.rotation || 0;
-  return (
-    <div
-      className={`absolute touch-none pointer-events-auto`}
-      style={{
-        left: 0,
-        top: 0,
-        width: block.width,
-        height: block.height,
-        zIndex: block.zIndex,
-        transform: `translate(${block.x}px, ${block.y}px) rotate(${rotation}rad)`,
-        mixBlendMode: block.blend || "normal",
-      }}
-    >
-      <BlockRenderFactory id={id} isSelected={isSelected} />
-    </div>
-  );
-}
-
-export function BlockUIFactory({ id }: { id: string; isSelected: boolean }) {
-  const [blockMap] = useAtom(BlockMapAtom);
-  const block = blockMap[id];
-
-  switch (block.type) {
-    case "image":
-      return null;
-    case "webcam":
-      return <WebcamBlockUI />;
-    default:
-      return null;
-  }
-}
-
-export function BlockRenderFactory({
-  id,
-  isSelected,
-}: {
-  id: string;
-  isSelected: boolean;
-}) {
-  const [blockMap] = useAtom(BlockMapAtom);
-  const block = blockMap[id];
-
-  switch (block.type) {
-    case "image":
-      return <ImageBlock block={block as ImageBlockType} />;
-    case "webcam":
-      return (
-        <WebcamBlockRender
-          block={block as WebcamBlockType}
-          isSelected={isSelected}
-        />
-      );
-    default:
-      return null;
-  }
-}
-
-export function RenderLayer() {}
