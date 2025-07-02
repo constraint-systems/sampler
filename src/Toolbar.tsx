@@ -9,8 +9,9 @@ import {
 } from "./atoms";
 import { useApplyHistoryState } from "./history/useApplyHistoryState";
 import { arrows } from "./consts";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ToolDownload } from "./tools/ToolDownload";
+import { ToolCameraSelector } from "./tools/ToolCameraSelector";
 
 export function Toolbar() {
   const [, setBlockIds] = useAtom(BlockIdsAtom);
@@ -20,6 +21,34 @@ export function Toolbar() {
   const [undoStack, setUndoStack] = useAtom(UndoStackAtom);
   const [redoStack, setRedoStack] = useAtom(RedoStackAtom);
   const applyHistoryState = useApplyHistoryState();
+  const [blockMap] = useAtom(BlockMapAtom);
+  const [blockIds] = useAtom(BlockIdsAtom);
+  const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+
+  const allBlocks = useMemo(() => {
+    return blockIds.map((id) => blockMap[id]);
+  }, [blockMap, selectedBlockIds]);
+
+  const selectedBlocks = useMemo(() => {
+    return selectedBlockIds.map((id) => blockMap[id]);
+  }, [blockMap, selectedBlockIds]);
+
+  const selectedWebcamBlocks = selectedBlocks.filter(
+    (block) => block.type === "webcam",
+  );
+
+  const selectedImageBlocks = selectedBlocks.filter(
+    (block) => block.type === "image",
+  );
+
+  const allWebcamBlocks = allBlocks.filter((block) => block.type === "webcam");
+
+  const webcamBlockExists = allWebcamBlocks.length > 0;
+
+  const blocksAreSelected = selectedBlockIds.length > 0;
+  const singleBlockSelected = selectedBlockIds.length === 1;
+  const multipleBlocksSelected = selectedBlockIds.length > 1;
+  const webcamIsSelected = selectedWebcamBlocks.length > 0;
 
   return (
     <div className="fixed right-3 top-3 flex flex-col items-end gap-3 z-50">
@@ -68,11 +97,18 @@ export function Toolbar() {
         </button>
       </div>
 
+      <div className="fixed right-3 top-3 flex flex-col items-end gap-3 z-50">
+        {webcamIsSelected && (
+          <ToolCameraSelector webcamBlocks={selectedWebcamBlocks} />
+        )}
+ 
+      </div>
       <div className="fixed right-3 bottom-3 flex flex-col items-end gap-3 z-50">
         <div className="flex gap-2 hidden">
           <StampDirection />
         </div>
-        <ToolDownload />
+        <div></div>
+       <ToolDownload />
       </div>
     </div>
   );
@@ -109,7 +145,6 @@ function StampDirection() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
