@@ -9,6 +9,7 @@ import { useHandleSelectedBoxResizeSide } from "./useHandleSelectedBoxResizeSide
 import { useHandleSelectedBoxResizeCorner } from "./useHandleSelectedBoxResizeCorner";
 import { useHandleBlockCropDrag } from "./useHandleBlockCropDrag";
 import { useHandleSelectedBoxResizeCropSide } from "./useHandleSelectedBoxResizeCropSide";
+import { useHandleSelectedBoxResizeCropCorner } from "./useHandleSelectedBoxResizeCropCorner";
 
 export function useHandlePointerEvents() {
   const [stateRef] = useAtom(StateRefAtom);
@@ -19,6 +20,7 @@ export function useHandlePointerEvents() {
   const handleSelectedBoxResizeSide = useHandleSelectedBoxResizeSide();
   const handleSelectedBoxResizeCorner = useHandleSelectedBoxResizeCorner();
   const handleSelectedBoxResizeCropSide = useHandleSelectedBoxResizeCropSide();
+  const handleSelectedBoxResizeCropCorner = useHandleSelectedBoxResizeCropCorner();
 
   const handleDrag = (dragEvent: DragEventType) => {
     const targetEl = (dragEvent.event.target as HTMLElement).closest(".active");
@@ -30,7 +32,11 @@ export function useHandlePointerEvents() {
         if (dataTarget === "zoom-container") {
           handleDragSelect(dragEvent);
         } else if (dataTarget.startsWith("resize-corner-")) {
-          handleSelectedBoxResizeCorner(dragEvent);
+          if (dragEvent.event.ctrlKey && stateRef.selectedBlockIds.length === 1) {
+            handleSelectedBoxResizeCropCorner(dragEvent);
+          } else {
+            handleSelectedBoxResizeCorner(dragEvent);
+          }
         } else if (dataTarget.startsWith("resize-side-")) {
           if (dragEvent.event.ctrlKey &&  stateRef.selectedBlockIds.length === 1) {
             handleSelectedBoxResizeCropSide(dragEvent);
