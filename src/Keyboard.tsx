@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import {
   BlockIdsAtom,
   BlockMapAtom,
+  ControlDownAtom,
   SelectedBlockIdsAtom,
   StateRefAtom,
 } from "./atoms";
@@ -14,6 +15,7 @@ export function Keyboard() {
   const [, setBlockIds] = useAtom(BlockIdsAtom);
   const [, setBlockMap] = useAtom(BlockMapAtom);
   const [, setSelectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const [, setControlDown] = useAtom(ControlDownAtom);
   const stampBlocks = useStampBlocks();
 
   function handleDeleteSelectedBlocks() {
@@ -36,7 +38,7 @@ export function Keyboard() {
     // update to behave like stamp
     const newBlockMap = { ...stateRef.blockMap };
     const newBlockIds = [...stateRef.blockIds];
-    let newSelectedBlockIds: string[] = []
+    let newSelectedBlockIds: string[] = [];
     stateRef.selectedBlockIds.forEach((id) => {
       const block = stateRef.blockMap[id];
       if (block) {
@@ -65,6 +67,10 @@ export function Keyboard() {
     let isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
     function handleKeyDown(event: KeyboardEvent) {
       const isCmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+      //  TODO switch to command or control
+      if (event.ctrlKey) {
+        setControlDown(true);
+      }
       if (event.key === "Backspace") {
         if (
           document.activeElement &&
@@ -90,8 +96,17 @@ export function Keyboard() {
         }
       }
     }
+    function handleKeyUp(event: KeyboardEvent) {
+      if (event.key === "Control") {
+        setControlDown(false);
+      }
+    }
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
   }, []);
 
   return null;

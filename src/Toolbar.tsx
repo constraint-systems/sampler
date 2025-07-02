@@ -4,6 +4,7 @@ import {
   BlockIdsAtom,
   BlockMapAtom,
   CameraAtom,
+  ControlDownAtom,
   SelectedBlockIdsAtom,
   SelectedBoxAtom,
   ShowCropModalAtom,

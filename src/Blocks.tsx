@@ -8,6 +8,7 @@ import {
 import { ImageBlockType, WebcamBlockType } from "./types";
 import { ImageBlock } from "./ImageBlock";
 import { WebcamBlockRender, WebcamBlockUI } from "./WebcamBlock";
+import { GeneralizedResizer } from "./GeneralizedResizer";
 
 export function Blocks() {
   const [blockIds] = useAtom(BlockIdsAtom);
@@ -56,6 +57,7 @@ export function BlockUI({ id }: { id: string }) {
             }}
           />
         )}
+        <GeneralizedResizer />
         <BlockUIFactory id={id} isSelected={isSelected} />
       </div>
     </>

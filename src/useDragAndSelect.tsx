@@ -35,7 +35,8 @@ export function useDragAndSelect() {
     topBlockId: null as string | null,
   });
 
-  return useDrag(async ({ first, last, xy: [x, y], altKey, ctrlKey }) => {
+  return useDrag(async ({ first, last, xy: [x, y], altKey, ctrlKey, event }) => {
+    console.log(event.target);
     let topBlockId = null;
     const canvasPoint = screenToCanvas(
       { x, y },

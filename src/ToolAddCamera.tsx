@@ -18,8 +18,8 @@ export function ToolAddCamera() {
         onClick={() => {
           const newId = uuid();
           const centerPoint = screenToCanvas({ x: window.innerWidth / 2, y: window.innerHeight / 2 }, stateRef.camera!, stateRef.zoomContainer!);
-          const starterWidth = 640;
-          const starterHeight = 360;
+          const starterWidth = 1280;
+          const starterHeight = 720;
 
           const activeStreamKeys = Object.keys(activeStreams);
           const newBlock = {

@@ -8,10 +8,10 @@ export function WebcamBlockUI() {
 
   return (
     <div
-      className={`absolute border-2 border-dashed border-white opacity-50`}
+      className={`absolute opacity-50`}
       style={{
         inset: -Math.max(8, 8 / camera.z),
-        borderWidth: Math.max(2, 2 / camera.z),
+        // borderWidth: Math.max(2, 2 / camera.z),
       }}
     ></div>
   );

@@ -17,6 +17,8 @@ export const CameraAtom = atom({
   z: 0.5,
 });
 
+export const ControlDownAtom = atom(false);
+
 export const ZoomContainerAtom = atom<HTMLDivElement | null>(null);
 
 export const ModeAtom = atom<ModeType>("move");
@@ -160,7 +162,7 @@ export const isDraggingAtom = atom(false);
 // maybe expand to images later
 export const ShowCropModalAtom = atom<string | null>(null);
 
-export const stampMoveDirectionAtom = atom<StampMoveDirectionType>("↘");
+export const stampMoveDirectionAtom = atom<StampMoveDirectionType>("↓");
 
 export const stampMoveOffsetAtom = atom<StampMoveOffsetType>("1");
 

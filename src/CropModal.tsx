@@ -241,11 +241,9 @@ export function CropModal() {
                 marginLeft: styleState.left,
                 width: styleState.width,
                 height: styleState.height,
-                transform: block.flippedHorizontally
-                  ? "scaleX(-1)"
-                  : block.flippedVertically
-                    ? "scaleY(-1)"
-                    : undefined,
+                transform: `scale(${block.flippedHorizontally ? -1 : 1}, ${
+                  block.flippedVertically ? -1 : 1
+                })`,
               }}
               src={block.src}
               draggable={false}
