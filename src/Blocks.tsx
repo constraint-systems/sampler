@@ -18,13 +18,13 @@ export function Blocks() {
           return <BlockRender key={id} id={id} />;
         })}
       </div>
-      <div className="absolute z-5">
-        <SelectedBox />
-      </div>
       <div className="absolute z-10">
         {blockIds.map((id) => {
           return <BlockUI key={id} id={id} />;
         })}
+      </div>
+      <div className="absolute z-5">
+        <SelectedBox />
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ export function BlockRender({ id }: { id: string }) {
         width: block.width,
         height: block.height,
         zIndex: block.zIndex,
-        mixBlendMode: 'darken'
+        mixBlendMode: "darken",
       }}
     >
       <BlockRenderFactory id={id} />
@@ -83,30 +83,45 @@ export function BlockUI({ id }: { id: string }) {
   const isSelected = selectedBlockIds.includes(id);
 
   return (
-    <>
-      <div
-        className={`${isSelected ? `${block.type === "webcam" ? "border-red-500" : "border-yellow-500"} cursor-grab` : "cursor-pointer"} absolute active pointer-events-auto touch-none select-none`}
-        data-target={`block-${id}`}
-        style={{
-          left: 0,
-          top: 0,
-          borderWidth: isSelected ? 2 / camera.z : 0,
-          transform: `translate(${block.x}px, ${block.y}px)`,
-          width: block.width,
-          height: block.height,
-          zIndex: block.zIndex,
-        }}
-      >
-        {isSelected &&  block.crop ? (
-          <div
-            className="pointer-events-none absolute -inset-3 border-cyan-500 border-2"
-            style={{
-              borderWidth: 2 / camera.z,
-            }}
-          />
-        ) : null}
-
-      </div>
-    </>
+    <div
+      className={`${isSelected ? `${block.type === "webcam" ? "border-red-500" : "border-yellow-500"} cursor-grab` : "cursor-pointer"} absolute active pointer-events-auto touch-none select-none`}
+      data-target={`block-${id}`}
+      style={{
+        left: 0,
+        top: 0,
+        borderWidth: isSelected ? 2 / camera.z : 0,
+        transform: `translate(${block.x}px, ${block.y}px)`,
+        width: block.width,
+        height: block.height,
+        zIndex: block.zIndex,
+      }}
+    >
+      {isSelected && block.crop ? <>
+        {block.crop.x ? <div
+          className="pointer-events-none absolute -left-4 bg-cyan-500 h-full"
+          style={{
+            width: 2 / camera.z,
+          }}
+        ></div> : null}
+        {block.crop.y ? <div
+          className="pointer-events-none absolute -top-4 bg-cyan-500 w-full"
+          style={{
+            height: 2 / camera.z,
+          }}
+        ></div> : null}
+        {block.crop.x + block.crop.width < block.originalMediaSize!.width ? <div
+          className="pointer-events-none absolute -right-4 bg-cyan-500 h-full"
+          style={{
+            width: 2 / camera.z,
+          }}
+        ></div> : null}
+        {block.crop.y + block.crop.height < block.originalMediaSize!.height ? <div
+          className="pointer-events-none absolute -bottom-4 bg-cyan-500 w-full"
+          style={{
+            height: 2 / camera.z,
+          }}
+        ></div> : null}
+      </> : null}
+    </div>
   );
 }

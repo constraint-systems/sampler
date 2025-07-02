@@ -88,6 +88,7 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
     <div className="absolute inset-0 touch-none select-none">
       {block.srcType === "canvas" ? (
         <canvas
+          id={"image-" + block.id}
           ref={(el) => {
             if (!canvasLoadedRef.current) {
               el!.width = block.canvas!.width;

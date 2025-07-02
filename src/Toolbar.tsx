@@ -10,6 +10,7 @@ import {
 import { useApplyHistoryState } from "./history/useApplyHistoryState";
 import { arrows } from "./consts";
 import { useState } from "react";
+import { ToolDownload } from "./tools/ToolDownload";
 
 export function Toolbar() {
   const [, setBlockIds] = useAtom(BlockIdsAtom);
@@ -21,10 +22,10 @@ export function Toolbar() {
   const applyHistoryState = useApplyHistoryState();
 
   return (
-    <div className="fixed right-3 top-3 flex hidden flex-col items-end gap-3 z-50">
+    <div className="fixed right-3 top-3 flex flex-col items-end gap-3 z-50">
       <div className="flex gap-2">
         <button
-          className="px-3 py-2 bg-red-800 hover:bg-red-700"
+          className="px-3 py-2 bg-red-800 hidden hover:bg-red-700"
           onClick={() => {
             // const newBlockId = crypto.randomUUID();
             // setBlockIds((prev) => [...prev, newBlockId]);
@@ -45,7 +46,7 @@ export function Toolbar() {
           +Camera
         </button>
         <button
-          className="px-3 py-2 bg-yellow-800 hover:bg-yellow-700"
+          className="px-3 py-2 bg-yellow-800 hidden hover:bg-yellow-700"
           onClick={() => {
             // const newBlockId = crypto.randomUUID();
             // setBlockIds((prev) => [...prev, newBlockId]);
@@ -68,9 +69,10 @@ export function Toolbar() {
       </div>
 
       <div className="fixed right-3 bottom-3 flex flex-col items-end gap-3 z-50">
-        <div className="flex gap-2">
+        <div className="flex gap-2 hidden">
           <StampDirection />
         </div>
+        <ToolDownload />
       </div>
     </div>
   );

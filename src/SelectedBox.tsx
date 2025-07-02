@@ -46,7 +46,7 @@ export function SelectedBox() {
 
 function ResizeSides({ color }: { color: string }) {
   const [camera] = useAtom(CameraAtom);
-  const sideWidth = Math.max(8, 8 / camera.z);
+  const sideWidth = Math.max(16, 16 / camera.z);
   const borderWidth = Math.max(2, 2 / camera.z);
   const cornerSize = Math.max(16, Math.round(16 / camera.z));
 
@@ -105,7 +105,7 @@ function ResizeSides({ color }: { color: string }) {
             }}
           >
             <div
-              className={`bg-${color}`}
+              className={`pointer-events-none bg-${color}`}
               style={{
                 width:
                   side === "top" || side === "bottom" ? "100%" : borderWidth,

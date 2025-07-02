@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import { StateRefAtom } from "../atoms";
 import { DragEventType } from "../types";
 import { useHandleWheel } from "./useHandleWheel";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useHandleDragSelect } from "./useHandleDragSelect";
 import { useHandleBlockDrag } from "./useHandleBlockDrag";
 import { useHandleSelectedBoxResizeSide } from "./useHandleSelectedBoxResizeSide";
@@ -20,25 +20,41 @@ export function useHandlePointerEvents() {
   const handleSelectedBoxResizeSide = useHandleSelectedBoxResizeSide();
   const handleSelectedBoxResizeCorner = useHandleSelectedBoxResizeCorner();
   const handleSelectedBoxResizeCropSide = useHandleSelectedBoxResizeCropSide();
-  const handleSelectedBoxResizeCropCorner = useHandleSelectedBoxResizeCropCorner();
+  const handleSelectedBoxResizeCropCorner =
+    useHandleSelectedBoxResizeCropCorner();
+
+  const startedAsControlRef = useRef(false);
 
   const handleDrag = (dragEvent: DragEventType) => {
     const targetEl = (dragEvent.event.target as HTMLElement).closest(".active");
     if (targetEl) {
       const dataTarget = targetEl.getAttribute("data-target")!;
       const numberOfActivePointers = stateRef.activePointers.size;
+      if (dragEvent.type === "first") {
+        if (dragEvent.event.ctrlKey) {
+          startedAsControlRef.current = true;
+        } else {
+          startedAsControlRef.current = false;
+        }
+      }
       if (numberOfActivePointers > 1) {
       } else {
         if (dataTarget === "zoom-container") {
           handleDragSelect(dragEvent);
         } else if (dataTarget.startsWith("resize-corner-")) {
-          if (dragEvent.event.ctrlKey && stateRef.selectedBlockIds.length === 1) {
+          if (
+            startedAsControlRef.current &&
+            stateRef.selectedBlockIds.length === 1
+          ) {
             handleSelectedBoxResizeCropCorner(dragEvent);
           } else {
             handleSelectedBoxResizeCorner(dragEvent);
           }
         } else if (dataTarget.startsWith("resize-side-")) {
-          if (dragEvent.event.ctrlKey &&  stateRef.selectedBlockIds.length === 1) {
+          if (
+            startedAsControlRef.current &&
+            stateRef.selectedBlockIds.length === 1
+          ) {
             handleSelectedBoxResizeCropSide(dragEvent);
           } else {
             handleSelectedBoxResizeSide(dragEvent);
@@ -55,6 +71,10 @@ export function useHandlePointerEvents() {
   };
 
   const handlePointerDown = (event: React.PointerEvent) => {
+    if (event.button !== 0) {
+      // Ignore non-primary button clicks
+      return;
+    }
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
     stateRef.activePointers.set(event.pointerId, {
       x: event.clientX,
