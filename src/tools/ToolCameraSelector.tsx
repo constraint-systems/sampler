@@ -2,6 +2,7 @@ import { useAtom } from "jotai";
 import { useDevices } from "../useDevices";
 import { BlockMapAtom, devicesAtom } from "../atoms";
 import { WebcamBlockType } from "../types";
+import { ToolSelect, ToolSelectOption } from "./ToolSelect";
 
 export function ToolCameraSelector({
   webcamBlocks,
@@ -19,12 +20,8 @@ export function ToolCameraSelector({
     selection = camerasSelectected.values().next().value!;
   }
 
-  return devices.length > 1 ? (
-    <select
-      className="pointer-events-auto px-3 py-1 focus:outline-none bg-neutral-800 w-full"
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
+  return devices.length > 0 ? (
+    <ToolSelect
       onChange={(e) => {
         startStream(e.target.value);
         const device = devices.find((d) => d.deviceId === e.target.value)!;
@@ -44,17 +41,12 @@ export function ToolCameraSelector({
       }}
     >
       {devices.map((device, index) => (
-        <option
-          className={`px-3 text-left py-1 pointer-events-auto ${
-            selection === device.deviceId ? "bg-neutral-700" : "bg-neutral-800"
-          }`}
-          value={device.deviceId}
+        <ToolSelectOption
           key={device.deviceId + index}
-          onClick={(e) => {}}
-        >
-          {device.label.split("(")[0].trim() || `Camera ${index}`}
-        </option>
+          value={device.deviceId}
+          label={device.label.split("(")[0].trim() || `Camera ${index}`}
+        />
       ))}
-    </select>
+    </ToolSelect>
   ) : null;
 }

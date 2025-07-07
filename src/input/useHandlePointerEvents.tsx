@@ -39,6 +39,9 @@ export function useHandlePointerEvents() {
       }
       if (numberOfActivePointers > 1) {
       } else {
+        if (dataTarget === "tool-button") {
+          return;
+        }
         if (dataTarget === "zoom-container") {
           handleDragSelect(dragEvent);
         } else if (dataTarget.startsWith("resize-corner-")) {

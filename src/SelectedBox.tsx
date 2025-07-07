@@ -6,6 +6,7 @@ import { getBoxBoundsFromBlocks } from "./utils";
 export function SelectedBox() {
   const [blockMap] = useAtom(BlockMapAtom);
   const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const [camera] = useAtom(CameraAtom);
 
   const selectedBlocks = selectedBlockIds.map((id) => blockMap[id]);
   const { x, y, width, height } = getBoxBoundsFromBlocks(selectedBlocks);
@@ -25,16 +26,20 @@ export function SelectedBox() {
   if (selectedBlockIds.length === 0) {
     return null;
   }
+
+  const offset = 3;
+  const doubleOffset = offset * 2;
+
   return (
     <>
       <div
         className="absolute"
         data-target="selected-box"
         style={{
-          left: x,
-          top: y,
-          width,
-          height,
+          left: x - Math.max(offset, offset / camera.z),
+          top: y - Math.max(offset, offset / camera.z),
+          width: width + Math.max(doubleOffset, doubleOffset / camera.z),
+          height: height + Math.max(doubleOffset, doubleOffset / camera.z),
         }}
       >
         <ResizeSides color={color} />
@@ -105,7 +110,7 @@ function ResizeSides({ color }: { color: string }) {
             }}
           >
             <div
-              className={`pointer-events-none bg-${color}`}
+              className={`pointer-events-none bg-white`}
               style={{
                 width:
                   side === "top" || side === "bottom" ? "100%" : borderWidth,
@@ -139,13 +144,13 @@ function ResizeCorners({ color }: { color: string }) {
           return (
             <div
               key={corner}
-              className={`active bg-transparent absolute border-${color} ${corner}`}
+              className={`active bg-white absolute ${corner}`}
               data-target={`resize-corner-${corner}`}
               style={{
                 width: cornerSize,
                 height: cornerSize,
                 cursor: cursor,
-                borderWidth,
+                borderRadius: "50%",
                 [corner.split("-")[0]]: -cornerSize / 2,
                 [corner.split("-")[1]]: -cornerSize / 2,
               }}

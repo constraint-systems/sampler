@@ -18,12 +18,13 @@
 html, body, #root {
   height: 100dvh;
   font-size: 15px;
+  line-height: 1.8;
   overflow: hidden;
   font-family: "DepartureMono", monospace;
 }
 
 body {
-  background-color: black;
+  background-color: theme('colors.neutral.900');
   color: theme('colors.neutral.200');
 }
 
@@ -32,10 +33,11 @@ input, textarea {
   color: theme('colors.neutral.200');
 }
 
-.border, .border-l, .border-t, .border-b, .border-r {
-  border-color: theme('colors.neutral.700');
-}
+/* .border, .border-l, .border-t, .border-b, .border-r { */
+/*   border-color: theme('colors.neutral.700'); */
+/* } */
 
 .active {
   pointer-events: auto;
 }
+

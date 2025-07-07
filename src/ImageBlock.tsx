@@ -9,95 +9,152 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // useEffect(() => {
+  //   if (
+  //     naturalSize.width &&
+  //     naturalSize.height &&
+  //     block.crop &&
+  //     canvasRef.current
+  //   ) {
+  //     const cropAspectRatio = block.crop.width / block.crop.height;
+  //     const blockAspectRatio = block.width / block.height;
+  //     if (blockAspectRatio > cropAspectRatio) {
+  //       const blockWidth = block.height * cropAspectRatio;
+  //       setBlockMap((prev) => ({
+  //         ...prev,
+  //         [block.id]: {
+  //           ...block,
+  //           width: blockWidth,
+  //         },
+  //       }));
+  //     } else {
+  //       const blockHeight = block.width / cropAspectRatio;
+  //       setBlockMap((prev) => ({
+  //         ...prev,
+  //         [block.id]: {
+  //           ...block,
+  //           height: blockHeight,
+  //         },
+  //       }));
+  //     }
+  //     const ctx = canvasRef.current!.getContext("2d")!;
+  //     canvasRef.current.width = block.crop.width;
+  //     canvasRef.current.height = block.crop.height;
+  //     if (block.flippedHorizontally || block.flippedVertically) {
+  //       ctx.save();
+  //     }
+  //     if (block.flippedHorizontally) {
+  //       ctx.scale(-1, 1);
+  //       ctx.translate(-imageRef.current!.naturalWidth, 0);
+  //     }
+  //     if (block.flippedVertically) {
+  //       ctx.scale(1, -1);
+  //       ctx.translate(0, -imageRef.current!.naturalHeight);
+  //     }
+  //     ctx.drawImage(
+  //       imageRef.current!,
+  //       block.flippedHorizontally
+  //         ? imageRef.current!.naturalWidth - block.crop.x - block.crop.width
+  //         : block.crop.x,
+  //       block.flippedVertically
+  //         ? imageRef.current!.naturalHeight - block.crop.y - block.crop.height
+  //         : block.crop.y,
+  //       block.crop.width,
+  //       block.crop.height,
+  //       0 +
+  //       (block.flippedHorizontally
+  //         ? imageRef.current!.naturalWidth - block.crop.width
+  //         : 0),
+  //       0 +
+  //       (block.flippedVertically
+  //         ? imageRef.current!.naturalHeight - block.crop.height
+  //         : 0),
+  //       block.crop.width,
+  //       block.crop.height,
+  //     );
+  //     if (block.flippedHorizontally || block.flippedVertically) {
+  //       ctx.restore();
+  //     }
+  //   }
+  // }, [
+  //   naturalSize,
+  //   block.crop,
+  //   block.flippedHorizontally,
+  //   block.flippedVertically,
+  // ]);
+
+  const canvasSourceRef = useRef<HTMLCanvasElement | null>(null);
+  const bufferCanvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
-    if (
-      naturalSize.width &&
-      naturalSize.height &&
-      block.crop &&
-      canvasRef.current
-    ) {
-      const cropAspectRatio = block.crop.width / block.crop.height;
-      const blockAspectRatio = block.width / block.height;
-      if (blockAspectRatio > cropAspectRatio) {
-        const blockWidth = block.height * cropAspectRatio;
-        setBlockMap((prev) => ({
-          ...prev,
-          [block.id]: {
-            ...block,
-            width: blockWidth,
-          },
-        }));
-      } else {
-        const blockHeight = block.width / cropAspectRatio;
-        setBlockMap((prev) => ({
-          ...prev,
-          [block.id]: {
-            ...block,
-            height: blockHeight,
-          },
-        }));
-      }
+    bufferCanvasRef.current =
+      bufferCanvasRef.current || document.createElement("canvas");
+    if (block.canvas && canvasRef.current) {
+      bufferCanvasRef.current!.width = block.canvas.width;
+      bufferCanvasRef.current!.height = block.canvas.height;
+      const bctx = bufferCanvasRef.current!.getContext("2d")!;
+      bctx.drawImage(block.canvas, 0, 0);
+
       const ctx = canvasRef.current!.getContext("2d")!;
-      canvasRef.current.width = block.crop.width;
-      canvasRef.current.height = block.crop.height;
+      canvasRef.current.width = block.crop?.width || block.canvas.width;
+      canvasRef.current.height = block.crop?.height || block.canvas.height;
+
+      if (block.flippedHorizontally || block.flippedVertically) {
+        ctx.save();
+      }
       if (block.flippedHorizontally || block.flippedVertically) {
         ctx.save();
       }
       if (block.flippedHorizontally) {
         ctx.scale(-1, 1);
-        ctx.translate(-imageRef.current!.naturalWidth, 0);
+        ctx.translate(-bufferCanvasRef!.current!.width, 0);
       }
       if (block.flippedVertically) {
         ctx.scale(1, -1);
-        ctx.translate(0, -imageRef.current!.naturalHeight);
+        ctx.translate(0, -bufferCanvasRef!.current!.height);
       }
-      ctx.drawImage(
-        imageRef.current!,
-        block.flippedHorizontally
-          ? imageRef.current!.naturalWidth - block.crop.x - block.crop.width
-          : block.crop.x,
-        block.flippedVertically
-          ? imageRef.current!.naturalHeight - block.crop.y - block.crop.height
-          : block.crop.y,
-        block.crop.width,
-        block.crop.height,
-        0 +
+      if (block.crop) {
+        ctx.drawImage(
+          bufferCanvasRef.current!,
+          block.flippedHorizontally
+            ?bufferCanvasRef.current!.width - block.crop.x - block.crop.width
+            : block.crop.x,
+          block.flippedVertically
+            ? bufferCanvasRef.current!.height - block.crop.y - block.crop.height
+            : block.crop.y,
+          block.crop.width,
+          block.crop.height,
+          0 +
           (block.flippedHorizontally
-            ? imageRef.current!.naturalWidth - block.crop.width
+            ? bufferCanvasRef.current!.width - block.crop.width
             : 0),
-        0 +
+          0 +
           (block.flippedVertically
-            ? imageRef.current!.naturalHeight - block.crop.height
+            ? bufferCanvasRef.current!.height - block.crop.height
             : 0),
-        block.crop.width,
-        block.crop.height,
-      );
+          block.crop.width,
+          block.crop.height,
+        );
+      } else {
+        ctx.drawImage(bufferCanvasRef.current, 0, 0);
+      }
       if (block.flippedHorizontally || block.flippedVertically) {
         ctx.restore();
       }
     }
   }, [
-    naturalSize,
+    block.canvas,
+    block.srcType,
     block.crop,
     block.flippedHorizontally,
     block.flippedVertically,
   ]);
 
-  const canvasLoadedRef = useRef(false);
   return (
     <div className="absolute inset-0 touch-none select-none">
       {block.srcType === "canvas" ? (
         <canvas
           id={"image-" + block.id}
-          ref={(el) => {
-            if (!canvasLoadedRef.current) {
-              el!.width = block.canvas!.width;
-              el!.height = block.canvas!.height;
-              const ctx = el!.getContext("2d")!;
-              ctx.drawImage(block.canvas!, 0, 0);
-              canvasLoadedRef.current = true;
-            }
-          }}
+          ref={canvasRef}
           className="absolute left-0 top-0 w-full h-full pointer-events-none"
         />
       ) : (
@@ -132,7 +189,7 @@ export function ImageBlock({ block }: { block: ImageBlockType }) {
           }}
         />
       )}
-      {block.crop && (
+      {block.crop && false && (
         <canvas
           id={"canvas-" + block.id}
           ref={canvasRef}

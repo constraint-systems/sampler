@@ -50,10 +50,18 @@ export function useStream() {
       .filter((block) => block.type === "webcam");
     const streamsBeingUsed = new Set(webcamBlocks.map((block) => block.src));
     const streamKeys = Object.keys(activeStreams);
+    console.log("streamsBeingUsed", streamsBeingUsed);
     for (const key of streamKeys) {
       if (!streamsBeingUsed.has(key)) {
+        console.log("stopping stream for", key);
         const activeStream = activeStreams[key];
+        if (!activeStream) continue;
+        if (activeStream.stream) {
+          activeStream.stream.getTracks().forEach((track) => track.stop());
+        }
         if (activeStream.refs.video) {
+          console.log("removing video element for", key);
+          activeStream.refs.video.srcObject = null;
           activeStream.refs.video.remove();
         }
         setActiveStreams((prev) => {

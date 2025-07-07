@@ -15,8 +15,6 @@ export function useStream() {
       if (!activeStream.refs)
         activeStream.refs = {
           video: null,
-          canvas: null,
-          drawRequest: null,
         };
       if (activeStream.stream && !activeStream.refs?.video) {
         activeStream.refs.video = document.createElement("video");
@@ -29,9 +27,6 @@ export function useStream() {
         activeStream.refs.video.playsInline = true;
         activeStream.refs.video.muted = true;
         document.body.appendChild(activeStream.refs.video);
-        if (!activeStream.refs.canvas) {
-          activeStream.refs.canvas = document.createElement("canvas");
-        }
         activeStream.refs.video.onloadedmetadata = () => {
           const videoWidth = activeStream.refs.video!.videoWidth;
           const videoHeight = activeStream.refs.video!.videoHeight;
@@ -42,14 +37,6 @@ export function useStream() {
               videoSize: { width: videoWidth, height: videoHeight },
             },
           }));
-          activeStream.refs.canvas!.width = videoWidth;
-          activeStream.refs.canvas!.height = videoHeight;
-          const ctx = activeStream.refs.canvas!.getContext("2d")!;
-          function draw() {
-            ctx.drawImage(activeStream.refs.video!, 0, 0);
-            activeStream.refs.drawRequest = window.requestAnimationFrame(draw);
-          }
-          activeStream.refs.drawRequest = window.requestAnimationFrame(draw);
         };
         activeStream.refs.video.srcObject = activeStream.stream;
       }
@@ -66,14 +53,13 @@ export function useStream() {
     for (const key of streamKeys) {
       if (!streamsBeingUsed.has(key)) {
         const activeStream = activeStreams[key];
+        if (!activeStream) continue;
+        if (activeStream.stream) {
+          activeStream.stream.getTracks().forEach((track) => track.stop());
+        }
         if (activeStream.refs.video) {
+          activeStream.refs.video.srcObject = null;
           activeStream.refs.video.remove();
-        }
-        if (activeStream.refs.canvas) {
-          activeStream.refs.canvas.remove();
-        }
-        if (activeStream.refs.drawRequest) {
-          window.cancelAnimationFrame(activeStream.refs.drawRequest);
         }
         setActiveStreams((prev) => {
           const newState = { ...prev };

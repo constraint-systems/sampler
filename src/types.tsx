@@ -18,7 +18,7 @@ export type BaseBlockType = {
   width: number;
   height: number;
   zIndex: number;
-  rotation: number;
+  blend: BlendTypes;
 };
 
 export type BlendTypes =
@@ -37,14 +37,12 @@ export type ImageBlockType = BaseBlockType & {
   canvas: HTMLCanvasElement | null;
   flippedHorizontally: boolean;
   flippedVertically: boolean;
-  blend: BlendTypes;
   originalMediaSize: SizeType | null;
 };
 
 export type WebcamBlockType = BaseBlockType & {
   type: "webcam";
   crop: CropBoxType;
-  blend: BlendTypes;
   flippedHorizontally: boolean;
   flippedVertically: boolean;
   // id that matches camera settings for stream

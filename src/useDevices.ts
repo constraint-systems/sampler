@@ -1,14 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { idealResolution } from "./consts";
 import { activeStreamsAtom, devicesAtom } from "./atoms";
 import { useAtom } from "jotai";
 
-// const preferredDeviceStorageName = "preferredDeviceLabel";
-
 export function useDevices() {
   const [devices, setDevices] = useAtom(devicesAtom);
   const [activeStreams, setActiveStreams] = useAtom(activeStreamsAtom);
-  // const [stream, setStream] = useAtom(mediaStreamAtom);
 
   async function startStream(deviceId: string) {
     if (!deviceId) return;
@@ -21,8 +18,6 @@ export function useDevices() {
           videoSize: null,
           refs: {
             video: null,
-            canvas: null,
-            drawRequest: null,
           },
         },
       }));

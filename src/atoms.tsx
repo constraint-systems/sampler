@@ -1,14 +1,10 @@
 import { atom } from "jotai";
 import {
   ActiveStreamType,
-  BlockSelectorType,
   BlockType,
   BoxType,
   HistoryEntryType,
-  ModeType,
-  SizeType,
   StampDirectionType,
-  StampMoveOffsetType,
   StateRefType,
 } from "./types";
 import { starterBlocks } from "./starterBlocks";
@@ -16,7 +12,7 @@ import { starterBlocks } from "./starterBlocks";
 export const CameraAtom = atom({
   x: 0,
   y: 0,
-  z: 0.5,
+  z: 0.375,
 });
 
 export const ZoomContainerAtom = atom<HTMLDivElement | null>(null);
@@ -72,3 +68,5 @@ export const UndoStackAtom = atom<HistoryEntryType[]>([]);
 export const RedoStackAtom = atom<HistoryEntryType[]>([]);
 
 export const CropTempAtom = atom<BoxType | null>(null);
+
+export const showCropModalAtom = atom(false);

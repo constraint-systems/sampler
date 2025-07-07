@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react";
 import { WebcamBlockType } from "./types";
 import { useAtom } from "jotai";
-import { activeStreamsAtom, BlockMapAtom, CameraAtom } from "./atoms";
+import {
+  activeStreamsAtom,
+  BlockMapAtom,
+  CameraAtom,
+  devicesAtom,
+} from "./atoms";
+import { idealResolution } from "./consts";
 
 export function WebcamBlockUI() {
   const [camera] = useAtom(CameraAtom);
@@ -21,7 +27,8 @@ export function WebcamBlockRender({ block }: { block: WebcamBlockType }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrame = useRef<number | null>(null);
   const [, setBlockMap] = useAtom(BlockMapAtom);
-  const [activeStreams] = useAtom(activeStreamsAtom);
+  const [activeStreams, setActiveStreams] = useAtom(activeStreamsAtom);
+  const [devices] = useAtom(devicesAtom);
 
   const videoSize = block.src ? activeStreams[block.src]?.videoSize : null;
 
@@ -42,19 +49,44 @@ export function WebcamBlockRender({ block }: { block: WebcamBlockType }) {
   }, [videoSize]);
 
   useEffect(() => {
-    if (block.src === null) {
-      const activeStreamKeys = Object.keys(activeStreams);
-      if (activeStreamKeys.length > 0) {
-        setBlockMap((prev) => ({
-          ...prev,
-          [block.id]: {
-            ...prev[block.id],
-            src: activeStreamKeys[0],
-          },
-        }));
+    async function startStream() {
+      if (block.src === null) {
+        const activeStreamKeys = Object.keys(activeStreams);
+        if (activeStreamKeys.length > 0) {
+          setBlockMap((prev) => ({
+            ...prev,
+            [block.id]: {
+              ...prev[block.id],
+              src: activeStreamKeys[0],
+            },
+          }));
+        } else {
+          if (devices.length > 0) {
+            const device = devices[0];
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: { exact: device.deviceId },
+                width: { ideal: idealResolution.width },
+              },
+            });
+            // start stream
+            setActiveStreams((prev) => {
+              const newState = { ...prev };
+              newState[device.deviceId] = {
+                stream: stream,
+                videoSize: null,
+                refs: {
+                  video: null,
+                },
+              };
+              return newState;
+            });
+          }
+        }
       }
     }
-  }, [block.src, activeStreams]);
+    startStream();
+  }, [block.src, activeStreams, devices]);
 
   useEffect(() => {
     if (videoSize && canvasRef.current) {
@@ -110,19 +142,19 @@ export function WebcamBlockRender({ block }: { block: WebcamBlockType }) {
               : block.crop.x,
             block.flippedVertically
               ? activeStream!.videoSize!.height -
-              block.crop.y -
-              block.crop.height
+                  block.crop.y -
+                  block.crop.height
               : block.crop.y,
             block.crop.width,
             block.crop.height,
             0 +
-            (block.flippedHorizontally
-              ? activeStream!.videoSize!.width - block.crop.width
-              : 0),
+              (block.flippedHorizontally
+                ? activeStream!.videoSize!.width - block.crop.width
+                : 0),
             0 +
-            (block.flippedVertically
-              ? activeStream!.videoSize!.height - block.crop.height
-              : 0),
+              (block.flippedVertically
+                ? activeStream!.videoSize!.height - block.crop.height
+                : 0),
             block.crop.width,
             block.crop.height,
           );
@@ -144,7 +176,9 @@ export function WebcamBlockRender({ block }: { block: WebcamBlockType }) {
   }, [
     canvasRef,
     videoSize,
+    block.src,
     block.crop,
+    activeStreams,
     block.flippedHorizontally,
     block.flippedVertically,
   ]);

@@ -1,11 +1,13 @@
+const width = 1920;
+const height = 1080;
 export const starterBlocks = [
   {
     id: "3c149431-d319-430a-9779-8d7d4ceea5b0",
     type: "webcam",
-    height: 720,
-    width: 1280,
-    x: -640,
-    y: -360,
+    width,
+    height,
+    x: -width / 2,
+    y: -height / 2,
     zIndex: 156615616,
     blend: "darken",
     flippedHorizontally: true,
