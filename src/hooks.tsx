@@ -54,25 +54,37 @@ export function useHandleDropImage() {
       reader.onload = async () => {
         const src = reader.result as string;
         const image = await loadImage(src);
-        const scale = Math.min(maxSize / image.width, maxSize / image.height);
+        let scale = 1;
+        if (image.width > maxSize || image.height > maxSize) {
+          scale = Math.min(maxSize / image.width, maxSize / image.height);
+        }
         const canvasPoint = screenToCanvas(
           { x: event.clientX, y: event.clientY },
           stateRef.camera!,
           stateRef.zoomContainer!,
         );
+        const canvas = document.createElement("canvas");
+        canvas.width = image.width * scale;
+        canvas.height = image.height * scale;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(image, 0, 0, image.width * scale, image.height * scale);
         const newId = uuid();
         createBlock({
           id: newId,
           type: "image",
           src,
+          canvas,
           x: canvasPoint.x - (image.width * scale) / 2,
           y: canvasPoint.y - (image.height * scale) / 2,
           width: image.width * scale,
           height: image.height * scale,
           flippedHorizontally: false,
           flippedVertically: false,
-          rotation: 0,
           blend: "darken",
+          originalMediaSize: {
+            width: image.width,
+            height: image.height,
+          },
           crop: null,
           zIndex: makeZIndex(),
         });
@@ -128,7 +140,6 @@ export function useHandlePasteImage() {
                 height: image.height * scale,
                 flippedHorizontally: false,
                 flippedVertically: false,
-                rotation: 0,
                 blend: "darken",
                 crop: null,
                 zIndex: makeZIndex(),
@@ -173,7 +184,6 @@ export function useHandleUploadImage() {
         createBlock({
           id: newId,
           type: "image",
-          srcType: "url",
           src,
           x: canvasPoint.x - (image.width * scale) / 2,
           y: canvasPoint.y - (image.height * scale) / 2,

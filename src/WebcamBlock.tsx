@@ -122,6 +122,7 @@ export function WebcamBlockRender({ block }: { block: WebcamBlockType }) {
     if (activeStream && canvasRef.current) {
       const video = activeStream.refs.video;
       const ctx = canvasRef.current.getContext("2d")!;
+      ctx.imageSmoothingEnabled = false;
       function draw() {
         if (block.flippedHorizontally || block.flippedVertically) {
           ctx.save();

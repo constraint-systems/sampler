@@ -19,6 +19,7 @@ export function useHandleWheel() {
     const { clientX: x, clientY: y, deltaX, deltaY, ctrlKey } = event;
 
     if (ctrlKey) {
+      event.preventDefault();
       setCamera((camera) =>
         zoomCamera(camera, { x, y }, deltaY / 400, stateRef.zoomContainer!),
       );

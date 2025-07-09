@@ -7,6 +7,7 @@ import {
   ControlDownAtom,
   RedoStackAtom,
   SelectedBlockIdsAtom,
+  ShowBlockMenuAtom,
   StampDirectionAtom,
   StateRefAtom,
   UndoStackAtom,
@@ -25,6 +26,7 @@ export function Keyboard() {
   const [, setControlDown] = useAtom(ControlDownAtom);
   const [, setUndoStack] = useAtom(UndoStackAtom);
   const [, setRedoStack] = useAtom(RedoStackAtom);
+  const [, setShowBlockMenu] = useAtom(ShowBlockMenuAtom);
   const [, setStampDirection] = useAtom(StampDirectionAtom);
   const applyHistoryState = useApplyHistoryState();
   const deleteSelectedBlocks = useDeleteSelectedBlocks();
@@ -88,6 +90,9 @@ export function Keyboard() {
       if (isCmdOrCtrl && event.shiftKey && event.key === "z") {
         event.preventDefault();
         handleRedo();
+      }
+      if (event.key === "/") {
+        setShowBlockMenu((prev) => !prev);
       }
       if (event.key === " ") {
         event.preventDefault();

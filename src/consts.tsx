@@ -1,4 +1,4 @@
-export const maxSize = 1080;
+export const maxSize = 1920;
 
 export const defaultCameraSettings = {
   deviceId: "",

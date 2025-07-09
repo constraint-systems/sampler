@@ -1,5 +1,10 @@
 import { useAtom } from "jotai";
-import { StateRefAtom } from "../atoms";
+import {
+  SelectedBlockIdsAtom,
+  ShowBlockMenuAtom,
+  showCropModalAtom,
+  StateRefAtom,
+} from "../atoms";
 import { DragEventType } from "../types";
 import { useHandleWheel } from "./useHandleWheel";
 import { useEffect, useRef } from "react";
@@ -13,6 +18,9 @@ import { useHandleSelectedBoxResizeCropCorner } from "./useHandleSelectedBoxResi
 
 export function useHandlePointerEvents() {
   const [stateRef] = useAtom(StateRefAtom);
+  const [, setSelectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const [, setShowCropModal] = useAtom(showCropModalAtom);
+  const [, setShowBlockMenu] = useAtom(ShowBlockMenuAtom);
   const handleWheel = useHandleWheel();
   const handleDragSelect = useHandleDragSelect();
   const handleBlockDrag = useHandleBlockDrag();
@@ -25,6 +33,7 @@ export function useHandlePointerEvents() {
 
   const startedAsControlRef = useRef(false);
 
+  const blockDoubleClickRefCheck = useRef(["block", 0] as [string, number]);
   const handleDrag = (dragEvent: DragEventType) => {
     const targetEl = (dragEvent.event.target as HTMLElement).closest(".active");
     if (targetEl) {
@@ -63,6 +72,18 @@ export function useHandlePointerEvents() {
             handleSelectedBoxResizeSide(dragEvent);
           }
         } else if (dataTarget.startsWith("block-")) {
+          if (dragEvent.type === "first") {
+            if (
+              blockDoubleClickRefCheck.current[0] === dataTarget &&
+              performance.now() - blockDoubleClickRefCheck.current[1] < 300
+            ) {
+              const blockId = dataTarget.replace("block-", "");
+              stateRef.selectedBlockIds = [blockId];
+              setSelectedBlockIds([blockId]);
+              setShowCropModal(true);
+            }
+            blockDoubleClickRefCheck.current = [dataTarget, performance.now()];
+          }
           if (dragEvent.event.ctrlKey) {
             handleBlockCropDrag(dragEvent);
           } else {
@@ -75,6 +96,14 @@ export function useHandlePointerEvents() {
 
   const handlePointerDown = (event: React.PointerEvent) => {
     if (event.button !== 0) {
+      // handle right click
+      if (event.button === 2) {
+        event.preventDefault(); // Prevent context menu
+        if (stateRef.selectedBlockIds.length > 0) {
+          // If right-clicking on a selected block, deselect it
+          setShowBlockMenu(true);
+        }
+      }
       // Ignore non-primary button clicks
       return;
     }

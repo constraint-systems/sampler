@@ -5,13 +5,19 @@ export function ToolValue({
   value,
   min = -Infinity,
   isInteractive = false,
+  step = 1,
+  shiftStep = 10,
+  formatter = (v: number) => v.toString(),
   updater = (newValue: number) =>
     console.warn("No updater provided for ToolValue", newValue),
 }: {
   label: string;
   value: number;
   isInteractive?: boolean;
-    min?: number;
+  min?: number;
+  step?: number;
+  shiftStep?: number;
+  formatter?: (v: number) => string;
   updater?: (newValue: number) => void;
 }) {
   const [stateValue, setStateValue] = useState(value.toString());
@@ -30,7 +36,7 @@ export function ToolValue({
     updater(newValue);
     setPrevValue(newValue);
   }
- 
+
   // Get updates from outside
   useEffect(() => {
     if (prevValue !== value) {
@@ -51,7 +57,7 @@ export function ToolValue({
       <input
         type="text"
         className="grow bg-transparent text-right w-full text-inherit focus:outline-none"
-        value={stateValue}
+        value={formatter(parseFloat(stateValue))}
         readOnly={!isInteractive}
         onChange={(e) => {
           if (isInteractive) {
@@ -71,14 +77,14 @@ export function ToolValue({
           }
           if (e.key === "ArrowUp" && isInteractive) {
             e.preventDefault(); // Prevent default scrolling behavior
-            const offset = e.shiftKey ? 10 : 1; // Shift + ArrowUp increases by 10
+            const offset = e.shiftKey ? shiftStep : step; // Shift + ArrowUp increases by 10
             const newValue = parseFloat(stateValue) + offset;
             setStateValue(newValue.toString());
             updater(newValue);
           }
           if (e.key === "ArrowDown" && isInteractive) {
             e.preventDefault(); // Prevent default scrolling behavior
-            const offset = e.shiftKey ? 10 : 1; // Shift + ArrowUp increases by 10
+            const offset = e.shiftKey ? shiftStep : step; // Shift + ArrowDown decreases by 10
             const newValue = parseFloat(stateValue) - offset;
             setStateValue(newValue.toString());
             updater(newValue);
@@ -87,8 +93,9 @@ export function ToolValue({
         onWheel={(e) => {
           if (isInteractive) {
             e.preventDefault(); // Prevent default scrolling behavior
-            const offset = e.shiftKey ? 10 : 1; // Shift + Wheel increases by 10
-            const newValue = parseFloat(stateValue) + (e.deltaY < 0 ? offset : -offset);
+            const offset = e.shiftKey ? shiftStep : step; // Shift + Wheel increases/decreases by 10
+            const newValue =
+              parseFloat(stateValue) + (e.deltaY < 0 ? offset : -offset);
             setStateValue(newValue.toString());
             updater(newValue);
           }

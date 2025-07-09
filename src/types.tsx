@@ -31,10 +31,9 @@ export type BlendTypes =
 
 export type ImageBlockType = BaseBlockType & {
   type: "image";
-  srcType: "url" | "canvas";
-  src: string;
+  src: string | null;
   crop: CropBoxType;
-  canvas: HTMLCanvasElement | null;
+  canvas: HTMLCanvasElement;
   flippedHorizontally: boolean;
   flippedVertically: boolean;
   originalMediaSize: SizeType | null;
